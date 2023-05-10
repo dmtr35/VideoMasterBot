@@ -6,13 +6,13 @@ const youtubedl = require('youtube-dl-exec')
 const fs = require('fs')
 const ytdl = require('ytdl-core')
 const unorm = require('unorm')
+const { audioDownloader } = require('./audioDownloader.js')
 require('dotenv').config()
 
 
 const token = process.env.TOKEN_BOT
 const bot = new TelegramBot(token, { polling: true })
 
-const botName = '@AudioVisualGenieBot'
 
 
 const start = async () => {
@@ -33,23 +33,21 @@ const start = async () => {
   bot.on('message', async msg => {
     const text = msg.text
     const chatId = msg.chat.id
-
-
+    
     try {
       if (text === '/start') {
-        const user = await User.findOne({ chatId })
+        const user = await User.findOne({ where: { chatId } })
+
         if (user) {
-          return bot.sendMessage(chatId, 'Выберите опцию:', startOptions)
+          return bot.sendMessage(chatId, 'Выберите опцию1:', startOptions)
         }
         await User.create({ chatId })
-        return bot.sendMessage(chatId, 'Выберите опцию:', startOptions)
+        return bot.sendMessage(chatId, 'Выберите опцию2:', startOptions)
       }
     } catch (e) {
       return bot.sendMessage(chatId, 'Произашла ошибка')
     }
   })
-
-
 
 
 
@@ -62,12 +60,19 @@ const start = async () => {
       bot.sendMessage(chatId, 'Введите ссылку на видео:')
 
       bot.once('message', async (msg) => {
-        const videoUrl = msg.text;
+        const videoUrl = msg.text
+
+
 
         const videoInfo = await ytdl.getInfo(videoUrl)
-        const title = videoInfo.videoDetails.title
-        const normalizedTitle = unorm.nfc(`${title}.mp3`)
+        const authorName = videoInfo.videoDetails.author.name
+        const videoTitle = videoInfo.videoDetails.title
 
+        let filename = `${authorName}-${videoTitle}`.replace(/[/\\?%*:|"<>]/g, '').replace(/"/g, '\'').substr(0, 64)
+        const normalizedFilename = unorm.nfc(`${filename}.mp3`)
+
+
+        bot.sendMessage(chatId, `Загрузка видио "${videoTitle.substr(0, 15)}.." началась, ожидайте`)
         youtubedl(videoUrl, {
           noCheckCertificates: true,
           noWarnings: true,
@@ -79,31 +84,20 @@ const start = async () => {
           extractAudio: true,
           audioFormat: 'mp3',
           audioMultistreams: true,
-          output: `./downloads/${normalizedTitle}`,
+          output: `./downloads/${normalizedFilename}`,
           ffmpegLocation: '/usr/bin/ffmpeg'
         }).then(async output => {
+          let filePath = `./downloads/${normalizedFilename}`
 
-          const filePath = `./downloads/${normalizedTitle}`
+          await audioDownloader(bot, chatId, filePath)
 
-          bot.sendMessage(chatId, 'Загрузка началась, ожидайте...')
-          bot.sendAudio(chatId, filePath, {
-            caption: botName
-          }).then(() => {
-            console.log('Audio file uploaded')
-            fs.unlinkSync(filePath)
-          }).catch(err => {
-            console.log('Error uploading audio file:', err)
-          })
+        }).catch(err => {
+          console.log('Error downloading audio file:', err)
+          bot.sendMessage(chatId, 'Произошла ошибка при загрузке аудио файла')
         })
       })
     }
   })
-
-
-
-
-
-
 }
 
 start()

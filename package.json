@@ -16,6 +16,7 @@
     "axios": "^1.4.0",
     "dotenv": "^16.0.3",
     "exif-parser": "^0.1.12",
+    "ffmpeg": "0.0.4",
     "node-telegram-bot-api": "^0.61.0",
     "pg": "^8.10.0",
     "pg-hstore": "^2.3.4",

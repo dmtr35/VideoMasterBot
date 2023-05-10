@@ -3,9 +3,10 @@ const { DataTypes } = require('sequelize')
 
 
 const User = sequelize.define('user', {
-    userId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-    chatId: { type: DataTypes.STRING, unique: true },
-})
+    chatId: { type: DataTypes.INTEGER, primaryKey: true, unique: true },
+    requestId: { type: DataTypes.INTEGER, allowNull: true },
+  });
+  
 
 // const Channel = sequelize.define('channel', {
 //     channelId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -27,7 +28,7 @@ const User = sequelize.define('user', {
 
 
 module.exports = {
-    User,
+    User
 }
 
 

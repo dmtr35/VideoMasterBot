@@ -2,8 +2,8 @@ module.exports = {
   startOptions: {
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [{ text: 'скачать аудио', callback_data: 'download audio' }],
-        [{ text: 'редактировать видео-аудио', callback_data: 'edit video audio' }],
+        [{ text: 'скачать аудио', callback_data: 'downloadAudio' }],
+        [{ text: 'редактировать аудио', callback_data: 'edit_audio' }],
       ]
     })
   },

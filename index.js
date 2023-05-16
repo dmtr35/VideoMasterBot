@@ -7,8 +7,8 @@ const fs = require('fs')
 const sequelize = require('./db.js')
 const { startOptions, qualityOptions } = require('./options.js')
 const { User, UserVideo, AudioFile } = require('./models.js')
-const { handleDownloadAudio, audioDownloaderHandlers } = require('./audio-processing/audioDownloader.js')
-// const middlewareCommand = require('./Middleware/MiddlewareCommand.js');
+const { audioDownloader } = require('./audio-processing/audioDownloader.js')
+const { removemageHandlers } = require('./handlers.js');
 
 
 require('dotenv').config()
@@ -32,7 +32,7 @@ const start = async () => {
   ])
   const botName = '@AudioVisualGenieBot'
 
-  bot.onText(/^\/start/, async (msg, match) => {
+  bot.onText(/^\/start/, async (msg) => {
     const chatId = msg.chat.id;
     try {
       const user = await User.findOne({ where: { chatId } })
@@ -45,7 +45,7 @@ const start = async () => {
       return bot.sendMessage(chatId, 'Произашла ошибка')
     }
   });
-  
+
 
 
 
@@ -54,8 +54,7 @@ const start = async () => {
     const option = query.data
 
     if (option === 'edit_audio') {
-      bot.removeListener('message', audioDownloaderHandlers.get(chatId))
-      audioDownloaderHandlers.delete(chatId)
+      await removemageHandlers(bot, chatId)
 
 
       await bot.sendMessage(chatId, 'здесь мы будем редактировать аудио файлы')
@@ -76,7 +75,7 @@ const start = async () => {
 
     if (option === 'downloadAudio') {
       await bot.sendMessage(chatId, 'Введите ссылку на видео:');
-      handleDownloadAudio(bot, chatId)
+      audioDownloader(bot, chatId)
     }
   })
 

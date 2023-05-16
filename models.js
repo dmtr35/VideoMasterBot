@@ -6,18 +6,20 @@ const { DataTypes } = require('sequelize')
 
 const User = sequelize.define('user', {
   chatId: { type: DataTypes.INTEGER, primaryKey: true, unique: true },
+  timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 })
 
 const UserVideo = sequelize.define('user_video', {
   userVideoId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  link: { type: DataTypes.STRING, allowNull: false },
+  videoLink: { type: DataTypes.STRING, allowNull: false },
   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 })
 
 
 const AudioFile = sequelize.define('audio_file', {
   audioFileId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  link: { type: DataTypes.STRING, allowNull: false },
+  audioLink: { type: DataTypes.STRING, allowNull: false },
+  timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 })
 
 

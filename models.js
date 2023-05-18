@@ -9,33 +9,39 @@ const User = sequelize.define('user', {
   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 })
 
-const UserVideo = sequelize.define('user_video', {
-  userVideoId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  videoLink: { type: DataTypes.STRING, allowNull: false },
-  timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-})
-
-
 const AudioFile = sequelize.define('audio_file', {
-  audioFileId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  videoLink: { type: DataTypes.STRING, primaryKey: true },
   audioLink: { type: DataTypes.STRING, allowNull: false },
   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-})
+});
+
+// const UserVideo = sequelize.define('user_video', {
+//   userVideoId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+//   videoLink: { type: DataTypes.STRING, allowNull: false },
+//   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+// })
+
+
+// const AudioFile = sequelize.define('audio_file', {
+//   videoLink: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+//   audioLink: { type: DataTypes.STRING, allowNull: false },
+//   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+// })
 
 
 
 
 
-User.hasMany(UserVideo, { onDelete: 'CASCADE' })
-UserVideo.belongsTo(User)
+// User.hasMany(UserVideo, { onDelete: 'CASCADE' })
+// UserVideo.belongsTo(User)
 
-User.belongsToMany(AudioFile, { through: 'UserAudioFile' })
-AudioFile.belongsToMany(User, { through: 'UserAudioFile' })
+// User.belongsToMany(AudioFile, { through: 'UserAudioFile' })
+// AudioFile.belongsToMany(User, { through: 'UserAudioFile' })
 
 
 
 module.exports = {
-  User, UserVideo, AudioFile
+  User, AudioFile
 }
 
 

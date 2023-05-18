@@ -1,15 +1,15 @@
-const mageHandlers = new Map()
-console.log('mageHandlers::', mageHandlers)
+const audioHandler = new Map()
+// console.log('audioHandler::', audioHandler)
 
 
 async function createmageHandlers(bot, chatId, messageAudioHandler) {
-    await mageHandlers.set(chatId, messageAudioHandler)
+    await audioHandler.set(chatId, messageAudioHandler)
     bot.on('message', messageAudioHandler)
 }
 
 async function removemageHandlers(bot, chatId) {
-    await bot.removeListener('message', mageHandlers.get(chatId))
-    mageHandlers.delete(chatId)
+    await bot.removeListener('message', audioHandler.get(chatId))
+    audioHandler.delete(chatId)
 }
 
 
@@ -19,4 +19,4 @@ async function removemageHandlers(bot, chatId) {
 
 
 
-module.exports = { mageHandlers, createmageHandlers, removemageHandlers }
+module.exports = { audioHandler, createmageHandlers, removemageHandlers }

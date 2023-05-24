@@ -1,98 +1,81 @@
-const TelegramBot = require('node-telegram-bot-api')
-const youtubedl = require('youtube-dl-exec')
-const ytdl = require('ytdl-core')
-const unorm = require('unorm')
-const fs = require('fs')
+const TelegramBot = require("node-telegram-bot-api")
 
-const sequelize = require('./db.js')
-const { startOptions, qualityOptions } = require('./options.js')
-const { User, UserVideo, AudioFile } = require('./models.js')
-const { audioDownloader } = require('./audio-processing/audioDownloader.js')
-const { removemageHandlers } = require('./handlers.js');
+const sequelize = require("./db.js")
+const { startOptions } = require("./options.js")
+const { User } = require("./models.js")
+const {
+  audioDownloader,
+} = require("./service/audioProcessing/audioDownloader.js")
 
+// const { tiktokDownloader } = require('./processing/tiltok-processing/tiktokDownloader.js')
 
-require('dotenv').config()
+const { removeAudioHandlers } = require("./hendlers/audioHandler.js")
+const { removeTiktokHandlers } = require("./hendlers/tikTokHandler.js")
 
+require("dotenv").config()
+
+// const {Builder, Browser, By, Key, until} = require('selenium-webdriver');
+// const chrome = require('selenium-webdriver/chrome');
+
+// console.log(audioDownloader)
+// audioDownloader()
 const token = process.env.TOKEN_BOT
 const bot = new TelegramBot(token, { polling: true })
-// bot.use(middlewareCommand(bot))
 
 
 const start = async () => {
   try {
+
     await sequelize.authenticate()
     await sequelize.sync()
   } catch (e) {
-    console.log('Подключение к бд сломалось', e)
+    console.log("Подключение к бд сломалось", e)
   }
 
   bot.setMyCommands([
-    { command: '/start', description: 'start message' },
-    { command: '/info', description: 'get info' },
+    { command: "/start", description: "start message" },
+    { command: "/info", description: "get info" },
   ])
-  const botName = '@AudioVisualGenieBot'
 
   bot.onText(/^\/start/, async (msg) => {
-    const chatId = msg.chat.id;
+    const chatId = msg.chat.id
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
-        return bot.sendMessage(chatId, 'Выберите опцию1:', startOptions)
+        return bot.sendMessage(chatId, "Выберите опцию1:", startOptions)
       }
       await User.create({ chatId })
-      return bot.sendMessage(chatId, 'Выберите опцию2:', startOptions)
+      return bot.sendMessage(chatId, "Выберите опцию2:", startOptions)
     } catch (e) {
-      return bot.sendMessage(chatId, 'Произашла ошибка')
+      return bot.sendMessage(chatId, "Произашла ошибка")
     }
-  });
+  })
 
+  bot.on("callback_query", async (query) => {
+    const chatId = query.message.chat.id
+    const option = query.data
+    console.log("option:10:", option)
 
+    if (option === "downloadTikTok") {
+      await removeAudioHandlers(bot, chatId)
+      console.log("test:10:")
 
+      await bot.sendMessage(chatId, "Введите ссылку на TikTok:")
 
-  bot.on('callback_query', async query => {
+      tiktokDownloader(bot, chatId)
+    }
+  })
+
+  bot.on("callback_query", async (query) => {
     const chatId = query.message.chat.id
     const option = query.data
 
-    if (option === 'edit_audio') {
-      await removemageHandlers(bot, chatId)
-
-
-      await bot.sendMessage(chatId, 'здесь мы будем редактировать аудио файлы')
-      await bot.on('message', async (msg) => {
-        await bot.sendMessage(chatId, 'запускается обработчик на edit audio')
-      })
-    }
-  })
-
-
-
-
-
-
-  bot.on('callback_query', async query => {
-    const chatId = query.message.chat.id;
-    const option = query.data;
-
-    if (option === 'downloadAudio') {
-      await bot.sendMessage(chatId, 'Введите ссылку на видео:');
+    if (option === "downloadAudio") {
+      removeTiktokHandlers(bot, chatId)
+      await bot.sendMessage(chatId, "Введите ссылку на видео:")
       audioDownloader(bot, chatId)
     }
   })
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
 
 start()

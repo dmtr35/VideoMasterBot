@@ -1,3 +1,6 @@
+
+
+
 function isValidUrl(string) {
     try {
         new URL(string);
@@ -8,10 +11,10 @@ function isValidUrl(string) {
 }
 
 
-async function getCleanVideoUrl(link) {
+async function getCleanVideoUrl(bot, chatId, link) {
     if (!isValidUrl(link)) {
-        console.log('Некорректная ссылка.');
-        return link;
+        console.log('Некорректная ссылка, попробуйде еще раз:');
+        return bot.sendMessage(chatId, 'Некорректная ссылка, попробуйде еще раз:')
     }
     const url = new URL(link);
     const searchParams = new URLSearchParams(url.search);
@@ -32,7 +35,6 @@ async function getCleanVideoUrl(link) {
 
     return url.toString();
 }
-
 
 
 

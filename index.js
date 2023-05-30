@@ -1,18 +1,16 @@
-const TelegramBot = require("node-telegram-bot-api")
+const { Telegraf } = require('telegraf')
+
 
 const sequelize = require("./db.js")
 const { startOptions } = require("./options.js")
 const { User } = require("./models.js")
-const {
-  audioDownloader,
-} = require("./service/audioProcessing/audioDownloader.js")
-
-// const { tiktokDownloader } = require('./processing/tiltok-processing/tiktokDownloader.js')
-
+const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
+const { tiktokDownloader } = require("./service/tiltok-processing/tiktokDownloader.js")
 const { removeAudioHandlers } = require("./hendlers/audioHandler.js")
 const { removeTiktokHandlers } = require("./hendlers/tikTokHandler.js")
 
 require("dotenv").config()
+
 
 // const {Builder, Browser, By, Key, until} = require('selenium-webdriver');
 // const chrome = require('selenium-webdriver/chrome');
@@ -20,62 +18,47 @@ require("dotenv").config()
 // console.log(audioDownloader)
 // audioDownloader()
 const token = process.env.TOKEN_BOT
-const bot = new TelegramBot(token, { polling: true })
-
+const bot = new Telegraf(token)
+// bot.stopPolling()
 
 const start = async () => {
   try {
-
     await sequelize.authenticate()
     await sequelize.sync()
   } catch (e) {
-    console.log("Подключение к бд сломалось", e)
+    console.log('Подключение к бд сломалось', e)
   }
 
-  bot.setMyCommands([
-    { command: "/start", description: "start message" },
-    { command: "/info", description: "get info" },
-  ])
+  bot.command('start', async (ctx) => {
+    const chatId = ctx.chat.id
 
-  bot.onText(/^\/start/, async (msg) => {
-    const chatId = msg.chat.id
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
-        return bot.sendMessage(chatId, "Выберите опцию1:", startOptions)
+        return ctx.reply('Выберите опцию1:', startOptions)
       }
       await User.create({ chatId })
-      return bot.sendMessage(chatId, "Выберите опцию2:", startOptions)
+      return ctx.reply('Выберите опцию2:', startOptions)
     } catch (e) {
-      return bot.sendMessage(chatId, "Произашла ошибка")
+      return ctx.reply('Произашла ошибка')
     }
   })
 
-  bot.on("callback_query", async (query) => {
-    const chatId = query.message.chat.id
-    const option = query.data
-    console.log("option:10:", option)
-
-    if (option === "downloadTikTok") {
-      await removeAudioHandlers(bot, chatId)
-      console.log("test:10:")
-
-      await bot.sendMessage(chatId, "Введите ссылку на TikTok:")
-
-      tiktokDownloader(bot, chatId)
-    }
+  bot.action('downloadTikTok', async (ctx) => {
+    const chatId = ctx.chat.id
+    await removeAudioHandlers(bot, chatId)
+    await ctx.reply('Введите ссылку на TikTok:')
+    await tiktokDownloader(bot, chatId)
   })
 
-  bot.on("callback_query", async (query) => {
-    const chatId = query.message.chat.id
-    const option = query.data
-
-    if (option === "downloadAudio") {
-      removeTiktokHandlers(bot, chatId)
-      await bot.sendMessage(chatId, "Введите ссылку на видео:")
-      audioDownloader(bot, chatId)
-    }
+  bot.action('downloadAudio', async (ctx) => {
+    const chatId = ctx.chat.id
+    await removeTiktokHandlers(bot, chatId)
+    await ctx.reply('Введите ссылку на видео:')
+    await audioDownloader(bot, chatId)
   })
+
+  bot.launch()
 }
 
 start()

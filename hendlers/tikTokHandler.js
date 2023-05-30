@@ -1,21 +1,16 @@
-const tiktokHandler = new Map()
-
+const tiktokHandler = new Map();
 
 async function createTiktokHandlers(bot, chatId, messageTiktokHandler) {
-    await tiktokHandler.set(chatId, messageTiktokHandler)
-    bot.on('message', messageTiktokHandler)
+  tiktokHandler.set(chatId, messageTiktokHandler);
+  bot.on('message', messageTiktokHandler);
 }
 
 async function removeTiktokHandlers(bot, chatId) {
-    await bot.removeListener('message', tiktokHandler.get(chatId))
-    tiktokHandler.delete(chatId)
+  const messageTiktokHandler = tiktokHandler.get(chatId);
+  if (messageTiktokHandler) {
+    bot.off('message', messageTiktokHandler);
+    tiktokHandler.delete(chatId);
+  }
 }
 
-
-
-
-
-
-
-
-module.exports = { tiktokHandler, createTiktokHandlers, removeTiktokHandlers }
+module.exports = { tiktokHandler, createTiktokHandlers, removeTiktokHandlers };

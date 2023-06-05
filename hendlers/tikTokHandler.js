@@ -8,7 +8,9 @@ async function createTiktokHandlers(bot, chatId, messageTiktokHandler) {
 async function removeTiktokHandlers(bot, chatId) {
   const messageTiktokHandler = tiktokHandler.get(chatId);
   if (messageTiktokHandler) {
-    bot.off('message', messageTiktokHandler);
+    // bot.off('message', messageTiktokHandler);
+    bot.removeListener('message', messageTiktokHandler);
+
     tiktokHandler.delete(chatId);
   }
 }

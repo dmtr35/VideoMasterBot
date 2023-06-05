@@ -1,13 +1,12 @@
 const { Telegraf } = require('telegraf')
 
-
 const sequelize = require("./db.js")
 const { startOptions } = require("./options.js")
 const { User } = require("./models.js")
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
-const { tiktokDownloader } = require("./service/tiltok-processing/tiktokDownloader.js")
-const { removeAudioHandlers } = require("./hendlers/audioHandler.js")
-const { removeTiktokHandlers } = require("./hendlers/tikTokHandler.js")
+const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
+const { removeAudioHandlers, audioHandler } = require("./hendlers/audioHandler.js")
+const { removeTiktokHandlers, tiktokHandler } = require("./hendlers/tikTokHandler.js")
 
 require("dotenv").config()
 
@@ -15,10 +14,13 @@ require("dotenv").config()
 // const {Builder, Browser, By, Key, until} = require('selenium-webdriver');
 // const chrome = require('selenium-webdriver/chrome');
 
-// console.log(audioDownloader)
+// console.log('tiktokHandler::', tiktokHandler)
+// console.log('audioHandler::', audioHandler)
 // audioDownloader()
 const token = process.env.TOKEN_BOT
 const bot = new Telegraf(token)
+const botName = "скачано с помощью @MediaWizardBot"
+
 // bot.stopPolling()
 
 const start = async () => {
@@ -46,16 +48,20 @@ const start = async () => {
 
   bot.action('downloadTikTok', async (ctx) => {
     const chatId = ctx.chat.id
-    await removeAudioHandlers(bot, chatId)
+    // await removeAudioHandlers(bot, chatId)
+    // console.log('tiktokHandler::', tiktokHandler)
+    // console.log('audioHandler::', audioHandler)
     await ctx.reply('Введите ссылку на TikTok:')
-    await tiktokDownloader(bot, chatId)
+    await tiktokDownloader(bot, chatId, botName)
   })
 
   bot.action('downloadAudio', async (ctx) => {
     const chatId = ctx.chat.id
-    await removeTiktokHandlers(bot, chatId)
+    // await removeTiktokHandlers(bot, chatId)
+    // console.log('tiktokHandler::', tiktokHandler)
+    // console.log('audioHandler::', audioHandler)
     await ctx.reply('Введите ссылку на видео:')
-    await audioDownloader(bot, chatId)
+    await audioDownloader(bot, chatId, botName)
   })
 
   bot.launch()

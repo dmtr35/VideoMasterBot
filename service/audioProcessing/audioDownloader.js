@@ -1,11 +1,10 @@
 const unorm = require("unorm")
 const { sendAudioFromFileId, downloadYoutubedl } = require("./audioFunction.js")
 const { audioHandler, createAudioHandlers, removeAudioHandlers } = require("../../hendlers/audioHandler.js")
-const { getCleanVideoLink } = require("../../utils/normalizeLink.js")
+const { getCleanVideoUrl } = require("../../utils/checkUrl.js")
 const { AudioFile } = require("../../models.js")
 const youtubedl = require("youtube-dl-exec")
 
-const botName = "скачано с помощью @MediaWizardBot"
 
 const flags = {
   dumpSingleJson: true,
@@ -15,7 +14,7 @@ const flags = {
   addHeader: ["referer:youtube.com", "user-agent:googlebot"]
 }
 
-async function audioDownloader(bot, chatId) {
+async function audioDownloader(bot, chatId, botName) {
   let normalizedFilename
   let audioFile
   let videoTitle
@@ -33,7 +32,7 @@ async function audioDownloader(bot, chatId) {
 
         const videoUrl = ctx.message.text;
         // console.log("videoUrl::", videoUrl)
-        const normalVideoUrl = await getCleanVideoLink(ctx, chatId, videoUrl)
+        const normalVideoUrl = await getCleanVideoUrl(ctx, chatId, videoUrl)
         // console.log("normalVideoUrl:33:", normalVideoUrl)
         // console.log("flags:33:", flags)
 
@@ -49,12 +48,12 @@ async function audioDownloader(bot, chatId) {
               .replace(/"/g, "'")
               .substr(0, 64)
             normalizedFilename = unorm.nfc(`${filename}.mp3`)
-            console.log("normalizedFilename:99:", normalizedFilename)
+            // console.log("normalizedFilename:99:", normalizedFilename)
           })
           .catch(error => {
             console.log("error:", error)
           })
-        console.log("normalizedFilename:55:", normalizedFilename)
+        // console.log("normalizedFilename:55:", normalizedFilename)
 
 
 
@@ -86,13 +85,13 @@ async function audioDownloader(bot, chatId) {
         }
       }
     } catch (error) {
-      console.error('Произошла ошибка глобального try/catch:', error);
+      console.error('Произошла ошибка глобального try/catch (audioDownloader):', error);
     }
   }
 
-  if (!audioHandler.has(chatId)) {
-    createAudioHandlers(bot, chatId, messageAudioHandler)
-  }
+  // if (!audioHandler.has(chatId)) {
+  //   createAudioHandlers(bot, chatId, messageAudioHandler)
+  // }
 }
 
 

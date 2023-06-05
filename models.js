@@ -13,13 +13,13 @@ const AudioFile = sequelize.define('audio_file', {
   videoLink: { type: DataTypes.STRING, primaryKey: true },
   audioLink: { type: DataTypes.STRING, allowNull: false },
   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-});
+})
 
-// const UserVideo = sequelize.define('user_video', {
-//   userVideoId: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-//   videoLink: { type: DataTypes.STRING, allowNull: false },
-//   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-// })
+const VideoTiktok = sequelize.define('user_video', {
+  videoLink: { type: DataTypes.STRING, primaryKey: true },
+  fileVideoId: { type: DataTypes.STRING, allowNull: false },
+  timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+})
 
 
 // const AudioFile = sequelize.define('audio_file', {
@@ -41,7 +41,7 @@ const AudioFile = sequelize.define('audio_file', {
 
 
 module.exports = {
-  User, AudioFile
+  User, AudioFile, VideoTiktok
 }
 
 

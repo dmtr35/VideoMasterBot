@@ -21,7 +21,7 @@ async function sendAudioTelegram(ctx, normalizedFilename, botName, audioLink, fi
 }
 
 async function sendAudioFromFileId(ctx, normalizedFilename, botName, audioLink, fileSize) {
-    console.log("audioLink::", audioLink);
+    // console.log("audioLink::", audioLink);
     const response = await ctx.replyWithAudio(audioLink, {
         caption: botName,
         filename: normalizedFilename,

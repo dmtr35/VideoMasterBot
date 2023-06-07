@@ -55,9 +55,9 @@ async function getVideoMetadata(ctx, chatId, videoUrlId) {
 
         await new Promise((resolve, reject) => {
             data.pipe(writer)
-              .on('finish', resolve)
-              .on('error', reject)
-          })
+                .on('finish', resolve)
+                .on('error', reject)
+        })
 
         return { videoPath: writer.path, videoTitle }
     } catch (error) {
@@ -87,16 +87,14 @@ async function getDownloadLink(id) {
 
 
 async function sendVideoTelegram(ctx, videoPath, botName) {
-    console.log("ctx:", ctx)
-    console.log("videoPath:", videoPath)
-    console.log("botName:", botName)
+    // console.log("videoPath:", videoPath)
+    // console.log("botName:", botName)
     try {
         const response = await ctx.replyWithVideo({ source: videoPath }, {
             caption: botName,
-            // filename: videoTitle,
-        });
+        })
 
-        console.log("response.video.file_id:", response.video.file_id)
+        // console.log("response.video.file_id:", response.video.file_id)
 
         return response.video.file_id
     } catch (e) {
@@ -105,12 +103,10 @@ async function sendVideoTelegram(ctx, videoPath, botName) {
 }
 
 async function sendVideoFromFileId(ctx, fileId, botName) {
-    const response = await ctx.replyWithVideo(fileId, {
+    await ctx.replyWithVideo(fileId, {
         caption: botName,
-        // filename: videoTitle,
-    });
+    })
 
-    console.log("response.video.file_id:", response.video.file_id)
 
     return response.video.file_id
 }

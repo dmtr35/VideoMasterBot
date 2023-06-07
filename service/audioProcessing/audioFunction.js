@@ -60,7 +60,7 @@ async function downloadYoutubedl(ctx, chatId, botName, videoTitle, normalizedFil
                 filePath = `./downloads/${normalizedFilename}`
                 fileStats = fs.statSync(filePath)
                 const fileSize = fileStats.size
-                console.log("fileSize::", fileSize)
+                // console.log("fileSize::", fileSize)
 
                 if (fileSize >= 50 * 1024 * 1024) {
                     const fileSizeInMB = fileSize / 1048576
@@ -69,7 +69,7 @@ async function downloadYoutubedl(ctx, chatId, botName, videoTitle, normalizedFil
                 }
 
                 const fileId = await sendAudioTelegram(ctx, normalizedFilename, botName, filePath, fileSize)
-                console.log("fileId::", fileId)
+                // console.log("fileId::", fileId)
                 await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId, })
                 console.log("Audio file uploaded")
 

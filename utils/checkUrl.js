@@ -35,19 +35,19 @@ async function getCleanVideoUrl(ctx, chatId, link) {
 
 
 async function checkTiktokUrl(ctx, chatId, urlTiktok) {
-  const response = await axios.get(urlTiktok)
-  const responseHtml = response.data
-
-
-  const regexString = 'https?://(?:www\\.)?tiktok\\.com/\\S*/video/(\\d+)|https?://(?:www\\.)?vm.tiktok\\.com/\\S*'
-  const regex = new RegExp(regexString, 'gm')
-
+  
   let match = null
   let attempts = 3
-
+  
   for (let i = 0; i < attempts; i++) {
-    match = regex.exec(responseHtml)
-    console.log('match::', match)
+    const response = await axios.get(urlTiktok)
+    const responseHtml = response.data
+  
+    const regexString = 'https?://(?:www\\.)?tiktok\\.com/\\S*/video/(\\d+)|https?://(?:www\\.)?vm.tiktok\\.com/\\S*'
+    const regex = new RegExp(regexString, 'gm')
+
+    match = await regex.exec(responseHtml)
+    console.log('match::', match[0])
     
     if (match !== null) {
       break

@@ -1,27 +1,34 @@
-const { Telegraf } = require('telegraf')
+const { Scenes, session, Telegraf } = require('telegraf')
 
 const sequelize = require("./db.js")
 const { startOptions } = require("./options.js")
 const { User } = require("./models.js")
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
-const { removeAudioHandlers, audioHandler } = require("./hendlers/audioHandler.js")
-const { removeTiktokHandlers, tiktokHandler } = require("./hendlers/tikTokHandler.js")
 
 require("dotenv").config()
+const token = process.env.TOKEN_BOT;
+const bot = new Telegraf(token);
+const botName = "скачано с помощью @MediaWizardBot";
+
+const audioDownloaderScene = new Scenes.BaseScene('audioDownloader');
+const tiktokDownloaderScene = new Scenes.BaseScene('tiktokDownloader');
+
+const stage = new Scenes.Stage([audioDownloaderScene, tiktokDownloaderScene],
+//    {
+//   ttl: 0,
+// }
+)
+
+bot.use(session())
+bot.use(stage.middleware())
+
+stage.register(audioDownloaderScene)
+stage.register(tiktokDownloaderScene)
+
+// bot.use(stage.middleware())
 
 
-// const {Builder, Browser, By, Key, until} = require('selenium-webdriver');
-// const chrome = require('selenium-webdriver/chrome');
-
-// console.log('tiktokHandler::', tiktokHandler)
-// console.log('audioHandler::', audioHandler)
-// audioDownloader()
-const token = process.env.TOKEN_BOT
-const bot = new Telegraf(token)
-const botName = "скачано с помощью @MediaWizardBot"
-
-// bot.stopPolling()
 
 const start = async () => {
   try {
@@ -32,8 +39,7 @@ const start = async () => {
   }
 
   bot.command('start', async (ctx) => {
-    const chatId = ctx.chat.id
-
+    const chatId = ctx.chat.id;
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
@@ -42,29 +48,59 @@ const start = async () => {
       await User.create({ chatId })
       return ctx.reply('Выберите опцию2:', startOptions)
     } catch (e) {
-      return ctx.reply('Произашла ошибка')
+      return ctx.reply('Произошла ошибка')
     }
+  });
+
+
+
+  
+  bot.action('downloadTikTok', async (ctx) => {
+    await ctx.scene.leave('audioDownloader')
+    const chatId = ctx.chat.id;
+    await ctx.scene.enter('tiktokDownloader')
+    await ctx.reply('Введите ссылку на TikTok:')
+
+
+    // await tiktokDownloader(bot, ctx, chatId, botName);
+  });
+
+
+  tiktokDownloaderScene.hears(/.*/, async (ctx) => {
+    await ctx.reply('продолжаем выполнение Tiktok:')
+
   })
 
-  bot.action('downloadTikTok', async (ctx) => {
-    const chatId = ctx.chat.id
-    // await removeAudioHandlers(bot, chatId)
-    // console.log('tiktokHandler::', tiktokHandler)
-    // console.log('audioHandler::', audioHandler)
-    await ctx.reply('Введите ссылку на TikTok:')
-    await tiktokDownloader(bot, chatId, botName)
-  })
+
 
   bot.action('downloadAudio', async (ctx) => {
+    await ctx.scene.leave('tiktokDownloader')
     const chatId = ctx.chat.id
-    // await removeTiktokHandlers(bot, chatId)
-    // console.log('tiktokHandler::', tiktokHandler)
-    // console.log('audioHandler::', audioHandler)
+    await ctx.scene.enter('audioDownloader')
     await ctx.reply('Введите ссылку на видео:')
-    await audioDownloader(bot, chatId, botName)
+
+
+    await audioDownloader(bot, chatId, botName, audioDownloaderScene)
   })
+
+
+
+
+
 
   bot.launch()
 }
 
+
+
 start()
+
+
+
+
+
+
+
+
+
+

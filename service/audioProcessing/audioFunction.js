@@ -9,40 +9,32 @@ const { removeFileAsync } = require("../../utils/fileUtils.js")
 
 
 async function sendAudioTelegram(ctx, normalizedFilename, botName, audioLink, fileSize) {
-    const response = await ctx.replyWithAudio( { source: audioLink }, { 
+    const response = await ctx.replyWithAudio({ source: audioLink }, {
         caption: botName,
         filename: normalizedFilename,
         contentType: "audio/mpeg",
         fileSize: fileSize
     })
     console.log("response.document.file_id::00", response.audio.file_id);
-    // console.log("audioLink:00:", audioLink);
     return response.audio.file_id;
 }
 
 async function sendAudioFromFileId(ctx, normalizedFilename, botName, audioLink, fileSize) {
-    // console.log("audioLink::", audioLink);
     const response = await ctx.replyWithAudio(audioLink, {
         caption: botName,
         filename: normalizedFilename,
         contentType: "audio/mpeg",
         fileSize: fileSize,
     })
-    // console.log("audioLink:00:", audioLink);
     return response.audio.file_id;
 }
 
-  
 
-  
+
+
 
 async function downloadYoutubedl(ctx, chatId, botName, videoTitle, normalizedFilename, normalVideoUrl) {
     await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId });
-
-    // console.log('botName::', botName)
-    // console.log('videoTitle::', videoTitle)
-    // console.log('normalizedFilename::', normalizedFilename)
-    // console.log('normalVideoUrl::', normalVideoUrl)
 
     await youtubedl(normalVideoUrl, {
         noCheckCertificates: true,
@@ -60,7 +52,6 @@ async function downloadYoutubedl(ctx, chatId, botName, videoTitle, normalizedFil
                 filePath = `./downloads/${normalizedFilename}`
                 fileStats = fs.statSync(filePath)
                 const fileSize = fileStats.size
-                // console.log("fileSize::", fileSize)
 
                 if (fileSize >= 50 * 1024 * 1024) {
                     const fileSizeInMB = fileSize / 1048576
@@ -69,17 +60,16 @@ async function downloadYoutubedl(ctx, chatId, botName, videoTitle, normalizedFil
                 }
 
                 const fileId = await sendAudioTelegram(ctx, normalizedFilename, botName, filePath, fileSize)
-                // console.log("fileId::", fileId)
                 await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId, })
                 console.log("Audio file uploaded")
 
                 try {
                     await removeFileAsync(filePath)
                     console.log("Файл удален успешно:", filePath)
-                  } catch (error) {
-                    console.error("Ошибка при удалении файла:", error)
-                  }
                 } catch (error) {
+                    console.error("Ошибка при удалении файла:", error)
+                }
+            } catch (error) {
                 console.log("Error uploading audio file:", error)
             }
         })

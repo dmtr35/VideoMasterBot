@@ -22,21 +22,6 @@ const VideoTiktok = sequelize.define('user_video', {
 })
 
 
-// const AudioFile = sequelize.define('audio_file', {
-//   videoLink: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-//   audioLink: { type: DataTypes.STRING, allowNull: false },
-//   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-// })
-
-
-
-
-
-// User.hasMany(UserVideo, { onDelete: 'CASCADE' })
-// UserVideo.belongsTo(User)
-
-// User.belongsToMany(AudioFile, { through: 'UserAudioFile' })
-// AudioFile.belongsToMany(User, { through: 'UserAudioFile' })
 
 
 

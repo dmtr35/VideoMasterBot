@@ -7,13 +7,14 @@ const { audioDownloader } = require("./service/audioProcessing/audioDownloader.j
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
 
 require("dotenv").config()
-const token = process.env.TOKEN_BOT;
-const bot = new Telegraf(token);
-const botName = "скачано с помощью @MediaWizardBot";
 
-const audioDownloaderScene = new Scenes.BaseScene('audioDownloader');
-const tiktokDownloaderScene = new Scenes.BaseScene('tiktokDownloader');
+const token = process.env.TOKEN_BOT
+const bot = new Telegraf(token)
+const botName = "скачано с помощью @MediaWizardBot"
 
+
+const audioDownloaderScene = new Scenes.BaseScene('audioDownloader')
+const tiktokDownloaderScene = new Scenes.BaseScene('tiktokDownloader')
 const stage = new Scenes.Stage([audioDownloaderScene, tiktokDownloaderScene],
 //    {
 //   ttl: 0,
@@ -26,7 +27,6 @@ bot.use(stage.middleware())
 stage.register(audioDownloaderScene)
 stage.register(tiktokDownloaderScene)
 
-// bot.use(stage.middleware())
 
 
 
@@ -38,8 +38,10 @@ const start = async () => {
     console.log('Подключение к бд сломалось', e)
   }
 
-  bot.command('start', async (ctx) => {
-    const chatId = ctx.chat.id;
+  const handleStartCommand = async (ctx) => {
+    await ctx.scene.leave()
+
+    const chatId = ctx.chat.id
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
@@ -50,40 +52,35 @@ const start = async () => {
     } catch (e) {
       return ctx.reply('Произошла ошибка')
     }
-  });
+  }
 
-
+  bot.command('start', handleStartCommand)
+  audioDownloaderScene.command('start', handleStartCommand)
+  tiktokDownloaderScene.command('start', handleStartCommand)
 
   
+
+
+
+
   bot.action('downloadTikTok', async (ctx) => {
     await ctx.scene.leave('audioDownloader')
+
     const chatId = ctx.chat.id;
     await ctx.scene.enter('tiktokDownloader')
     await ctx.reply('Введите ссылку на TikTok:')
-
-
-    // await tiktokDownloader(bot, ctx, chatId, botName);
-  });
-
-
-  tiktokDownloaderScene.hears(/.*/, async (ctx) => {
-    await ctx.reply('продолжаем выполнение Tiktok:')
-
+    await tiktokDownloader(bot, chatId, botName, tiktokDownloaderScene)
   })
-
 
 
   bot.action('downloadAudio', async (ctx) => {
     await ctx.scene.leave('tiktokDownloader')
+
     const chatId = ctx.chat.id
     await ctx.scene.enter('audioDownloader')
     await ctx.reply('Введите ссылку на видео:')
-
-
     await audioDownloader(bot, chatId, botName, audioDownloaderScene)
   })
-
-
 
 
 
@@ -94,13 +91,6 @@ const start = async () => {
 
 
 start()
-
-
-
-
-
-
-
 
 
 

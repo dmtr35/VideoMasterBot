@@ -1,6 +1,7 @@
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
+
 require('dotenv').config()
 
 
@@ -64,9 +65,7 @@ async function getVideoMetadata(ctx, chatId, videoUrlId) {
         await ctx.telegram.sendMessage(chatId, 'Загрузка не удалась, попробуйте еще раз:')
         console.log(`[ ${videoTitle} got error while trying to get video data! ] ===== [skipped]`)
     }
-
 }
-
 
 
 
@@ -87,15 +86,10 @@ async function getDownloadLink(id) {
 
 
 async function sendVideoTelegram(ctx, videoPath, botName) {
-    // console.log("videoPath:", videoPath)
-    // console.log("botName:", botName)
     try {
         const response = await ctx.replyWithVideo({ source: videoPath }, {
             caption: botName,
         })
-
-        // console.log("response.video.file_id:", response.video.file_id)
-
         return response.video.file_id
     } catch (e) {
         console.log('ошибка ' + e)
@@ -106,9 +100,7 @@ async function sendVideoFromFileId(ctx, fileId, botName) {
     await ctx.replyWithVideo(fileId, {
         caption: botName,
     })
-
-
-    return response.video.file_id
+    return
 }
 
 

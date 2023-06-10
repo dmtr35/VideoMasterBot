@@ -2,6 +2,11 @@ const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
 
+const { updateSuccessfulRequestsVideoTT } = require("../../utils/userUtils.js")
+const { removeFileAsync, checkSize } = require("../../utils/fileUtils.js")
+
+
+
 require('dotenv').config()
 
 
@@ -24,11 +29,13 @@ const headers = {
 async function getVideoMetadata(ctx, chatId, videoUrlId) {
     console.log('videoUrlId::', videoUrlId)
 
-    const { videoUrl, author, title, size } = await getDownloadLink(videoUrlId)
+    const { videoUrl, author, title, fileSize } = await getDownloadLink(videoUrlId)
     // console.log('videoUrl::', videoUrl)
     // console.log('author::', author)
     // console.log('title::', title)
     // console.log('size::', size)
+
+    if (fileSize >= 50 * 1024 * 1024) { await checkSize(fileSize) }
 
 
     let processedAuthor = author.replace(/[^\w\s]/g, '')
@@ -77,7 +84,7 @@ async function getDownloadLink(id) {
         videoUrl: filtered.video.play_addr.url_list[0],
         author: filtered.author.unique_id,
         title: filtered.desc,
-        size: filtered.video.play_addr.data_size
+        fileSize: filtered.video.play_addr.data_size
     }
 }
 
@@ -86,10 +93,15 @@ async function getDownloadLink(id) {
 
 
 async function sendVideoTelegram(ctx, videoPath, botName) {
+    const chatId = ctx.chat.id
+
     try {
         const response = await ctx.replyWithVideo({ source: videoPath }, {
             caption: botName,
         })
+
+        await updateSuccessfulRequestsVideoTT(chatId)
+
         return response.video.file_id
     } catch (e) {
         console.log('ошибка ' + e)
@@ -97,9 +109,14 @@ async function sendVideoTelegram(ctx, videoPath, botName) {
 }
 
 async function sendVideoFromFileId(ctx, fileId, botName) {
+    const chatId = ctx.chat.id
+
     await ctx.replyWithVideo(fileId, {
         caption: botName,
     })
+
+    // await updateSuccessfulRequestsVideoTT(chatId)
+
     return
 }
 

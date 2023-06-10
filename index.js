@@ -3,29 +3,45 @@ const { Scenes, session, Telegraf } = require('telegraf')
 const sequelize = require("./db.js")
 const { startOptions } = require("./options.js")
 const { User } = require("./models.js")
+
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
+
+const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
+const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
 
 require("dotenv").config()
 
 const token = process.env.TOKEN_BOT
 const bot = new Telegraf(token)
-const botName = "скачано с помощью @MediaWizardBot"
+// bot.use(blockMiddleware)
+// bot.use(limitRequestsMiddleware)
 
+// bot.use(limitYouTubeRequestsMiddleware)
+// bot.use(limitTikTokRequestsMiddleware)
+
+const botName = "скачано с помощью @MediaWizardBot"
 
 const audioDownloaderScene = new Scenes.BaseScene('audioDownloader')
 const tiktokDownloaderScene = new Scenes.BaseScene('tiktokDownloader')
+
+
+// audioDownloaderScene.use(limitYouTubeRequestsMiddleware)
+// tiktokDownloaderScene.use(limitTikTokRequestsMiddleware)
+
+
 const stage = new Scenes.Stage([audioDownloaderScene, tiktokDownloaderScene],
-//    {
-//   ttl: 0,
-// }
+  //    {
+  //   ttl: 0,
+  // }
 )
+
 
 bot.use(session())
 bot.use(stage.middleware())
 
-stage.register(audioDownloaderScene)
-stage.register(tiktokDownloaderScene)
+// stage.register(audioDownloaderScene)
+// stage.register(tiktokDownloaderScene)
 
 
 
@@ -58,7 +74,7 @@ const start = async () => {
   audioDownloaderScene.command('start', handleStartCommand)
   tiktokDownloaderScene.command('start', handleStartCommand)
 
-  
+
 
 
 
@@ -84,7 +100,8 @@ const start = async () => {
 
 
 
-
+  // audioDownloaderScene.use(limitYouTubeRequestsMiddleware)
+  // tiktokDownloaderScene.use(limitTikTokRequestsMiddleware)
   bot.launch()
 }
 

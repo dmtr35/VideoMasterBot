@@ -1,16 +1,25 @@
 const axios = require('axios')
 
+const { updateFailedRequestsAudioYT, updateFailedRequestsVideoTT } = require('./userUtils.js')
+
 
 
 
 
 async function checkYoutubeVideoUrl(ctx, chatId, link) {
-  const regexString = 'https?://(?:www\\.)?(?:tiktok\\.com/\\S*/video/(\\d+)|vm.tiktok\\.com/\\S*|youtube\\.com/watch\\?v=([0-9a-zA-Z\\-_]{11})|youtube\\.com/shorts/([0-9a-zA-Z\\-_]{11}))';
+  const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11})';
+  // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}'
+  // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}'
+  // const regexString = 'https?://(?:www\\.)?youtube\\.com/shorts/[A-Za-z0-9-_]{11}'
+  // const regexString = 'https?://(?:www\\.)?youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}';
+
   const regex = new RegExp(regexString)
   const match = await regex.exec(link)
 
 
   if (!match) {
+    await updateFailedRequestsAudioYT(chatId)
+
     await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка, попробуйде еще раз:')
     throw new Error('Некорректная ссылка на YouTube')
   }
@@ -42,6 +51,8 @@ async function checkTiktokVideoUrl(ctx, chatId, urlTiktok) {
       throw new Error('Ссылка не найдена!')
     }
   } catch (e) {
+    await updateFailedRequestsVideoTT(chatId)
+
     await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка TikTok, попробуйте еще раз:')
   }
 }

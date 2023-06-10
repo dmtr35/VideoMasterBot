@@ -39,3 +39,19 @@
     "youtube-validator": "^1.1.2"
   }
 }
+
+
+"dependencies": {
+  "async": "^3.2.4",
+  "axios": "^1.4.0",
+  "dotenv": "^16.0.3",
+  "ffmpeg": "0.0.4",
+  "fs": "^0.0.1-security",
+  "path": "^0.12.7",
+  "pg": "^8.10.0",
+  "pg-hstore": "^2.3.4",
+  "sequelize": "^6.31.0",
+  "telegraf": "^4.12.2",
+  "unorm": "^1.6.0",
+  "youtube-dl-exec": "^2.4.1"
+}

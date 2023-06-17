@@ -1,7 +1,7 @@
-const { checkTiktokVideoUrl } = require('../../utils/checkUrl.js')
 const { VideoTiktok } = require('../../models.js')
-const { getVideoMetadata, sendVideoTelegram, sendVideoFromFileId } = require('./tiktokFunction.js')
-const { removeFileAsync } = require("../../utils/fileUtils.js")
+
+const { checkTiktokVideoUrl } = require('../../utils/checkUrl.js')
+const { getVideoMetadata, sendVideoFromFileId } = require('./tiktokFunction.js')
 
 
 
@@ -10,66 +10,40 @@ const { removeFileAsync } = require("../../utils/fileUtils.js")
 
 
 
-async function tiktokDownloader(bot, chatId, botName, tiktokDownloaderScene) {
+async function tiktokDownloader(bot, botName, tiktokDownloaderScene) {
 
     tiktokDownloaderScene.hears(/.*/, async (ctx) => {
         try {
-            if (ctx.chat.id === chatId) {
-                let videoUrl = ctx.message.text
+            // const chatId = ctx.chat.id;
+            let videoUrl = ctx.message.text
 
-                // videoUrl = 'https://vt.tiktok.com/ZS8Ww4rvV/'
-                // videoUrl = 'https://www.tiktok.com/@vancityreynolds/video/7231232190019898667?lang=en&source=h5_m'
+            const { videoUrlId, videoFullUrl } = await checkTiktokVideoUrl(ctx, videoUrl)
+            console.log('videoFullUrl::', videoFullUrl)
+            try {
+                const videoFile = await VideoTiktok.findOne({ where: { videoLink: videoFullUrl } })
 
-                const { videoUrlId, videoFullUrl } = await checkTiktokVideoUrl(ctx, chatId, videoUrl)
+                if (!videoFile) {
+                    console.log('Запись о файле не найдена в базе данных')
+                    console.log('videoFullUrl::', videoFullUrl)
 
-
-                try {
-                    const videoFile = await VideoTiktok.findOne({ where: { videoLink: videoFullUrl } })
-
-                    if (!videoFile) {
-                        console.log('Запись о файле не найдена в базе данных')
-
-                        const { videoPath, videoTitle } = await getVideoMetadata(ctx, chatId, videoUrlId)
-                        await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId });
-                        const fileId = await sendVideoTelegram(ctx, videoPath, botName)
-                        await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId, })
-
-                        try {
-                            await removeFileAsync(videoPath)
-                            console.log("Файл удален успешно:", videoPath)
-                        } catch (error) {
-                            console.error("Ошибка при удалении файла:", error)
-                        }
-
-                        return console.log(`Файл ${videoTitle} отправлен в чат ${chatId}`)
-
-                    }
-                    const telegramFile = await bot.telegram.getFile(videoFile.fileVideoId)
-
-                    if (telegramFile) {
-                        await sendVideoFromFileId(ctx, videoFile.fileVideoId, botName)
-                    }
-                } catch (error) {
-                    await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
-                    const { videoPath, videoTitle } = await getVideoMetadata(ctx, chatId, videoUrlId)
-                    await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId });
-
-                    const fileId = await sendVideoTelegram(ctx, videoPath, botName)
-
-                    await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId, })
-
-                    try {
-                        await removeFileAsync(videoPath)
-                        console.log("Файл удален успешно:", videoPath)
-                    } catch (error) {
-                        console.error("Ошибка при удалении файла:", error)
-                    }
-
-                    console.error(`Ошибка при получении файла ${videoTitle}:`, error);
+                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName)
+                    return console.log('файл отправлен')
                 }
+                const telegramFile = await bot.telegram.getFile(videoFile.fileVideoId)
+
+                if (telegramFile) {
+                    await sendVideoFromFileId(ctx, videoFile.fileVideoId, botName)
+                } else {
+                    await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
+                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName)
+
+                    return console.log('файл отправлен')
+                }
+            } catch (error) {
+                return console.error('Ошибка загрузки файла: ', error)
             }
         } catch (error) {
-            console.error('Произошла ошибка глобального try/catch (tiktokDownloader):', error);
+            console.error('Произошла ошибка глобального try/catch (tiktokDownloader): ', error);
         }
     })
 

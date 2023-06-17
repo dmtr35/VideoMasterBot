@@ -1,16 +1,19 @@
+
 const axios = require('axios')
-const fs = require('fs')
 const path = require('path')
 
-const { updateSuccessfulRequestsVideoTT } = require("../../utils/userUtils.js")
+const { VideoTiktok } = require('../../models.js')
+// const { updateSuccessfulRequestsVideoTT } = require("../../utils/dbUtils.js")
 const { removeFileAsync, checkSize } = require("../../utils/fileUtils.js")
-
-
+const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
+const { sendVideoTelegram, sendVideoFromFileId } = require('../../utils/telegramFunctions.js')
 
 require('dotenv').config()
 
 
+
 let cookie = convertCookie(process.env.COOKIE)
+const workerPath = path.join(__dirname, '../../workers/downloadTiktokWorker.js')
 
 function convertCookie(cookies) {
     try {
@@ -26,48 +29,56 @@ const headers = {
 }
 
 
-async function getVideoMetadata(ctx, chatId, videoUrlId) {
-    console.log('videoUrlId::', videoUrlId)
-
-    const { videoUrl, author, title, fileSize } = await getDownloadLink(videoUrlId)
-    // console.log('videoUrl::', videoUrl)
-    // console.log('author::', author)
-    // console.log('title::', title)
-    // console.log('size::', size)
-
-    if (fileSize >= 50 * 1024 * 1024) { await checkSize(fileSize) }
-
-
-    let processedAuthor = author.replace(/[^\w\s]/g, '')
-    processedAuthor = processedAuthor.substring(0, 16)
-
-    let processedTitle = title.split('#')[0]
-    processedTitle = processedTitle.replace(/[^\w\s]/g, '')
-    processedTitle = processedTitle.substring(0, 48)
-
-    const videoTitle = `${processedAuthor}-${processedTitle}`
-
+async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName) {
+    const chatId = ctx.chat.id
+    let videoTitle
 
     try {
-        console.log('videoUrl::', videoUrl)
+        console.log('videoUrlId::', videoUrlId)
 
-        const { data } = await axios({
-            url: videoUrl,
-            method: 'GET',
-            responseType: 'stream'
-        })
+        const { videoUrl, author, title, fileSize } = await getDownloadLink(videoUrlId)
+        if (fileSize >= 50 * 1024 * 1024) { return checkSize(ctx, fileSize) }
 
-        if (!fs.existsSync('downloads')) fs.mkdirSync('downloads')
 
-        const writer = fs.createWriteStream(path.resolve('downloads', `${videoTitle}.mp4`))
+        let processedAuthor = author
+            .replace(/[/\\?%*:|"<>]/g, "")
+            .replace(/"/g, "'")
+            .substr(0, 20)
+        console.log('processedAuthor:1:', processedAuthor)
 
-        await new Promise((resolve, reject) => {
-            data.pipe(writer)
-                .on('finish', resolve)
-                .on('error', reject)
-        })
+        let processedTitle = title
+            .replace(/[/\\?%*:|"<>]/g, "")
+            .replace(/"/g, "'")
+            .substr(0, 44)
+        console.log('processedTitle:2:', processedTitle)
 
-        return { videoPath: writer.path, videoTitle }
+
+        videoTitle = `${processedAuthor}-${processedTitle}`
+        await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId })
+
+
+        createWorkerAndDownload(videoUrl, videoTitle, workerPath)
+            .then(async (filePath) => {
+
+
+                const fileId = await sendVideoTelegram(ctx, filePath, botName)
+                await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId })
+
+                try {
+                    await removeFileAsync(filePath)
+                    console.log("Файл удален успешно:", filePath)
+                } catch (error) {
+                    console.error("Ошибка при удалении файла:", error)
+                }
+                return console.log(`Файл ${videoTitle} отправлен в чат ${chatId}`)
+
+
+            })
+            .catch((error) => {
+                console.error("Error downloading file:", error);
+            })
+
+
     } catch (error) {
         await ctx.telegram.sendMessage(chatId, 'Загрузка не удалась, попробуйте еще раз:')
         console.log(`[ ${videoTitle} got error while trying to get video data! ] ===== [skipped]`)
@@ -92,33 +103,37 @@ async function getDownloadLink(id) {
 
 
 
-async function sendVideoTelegram(ctx, videoPath, botName) {
-    const chatId = ctx.chat.id
+// async function sendVideoTelegram(ctx, videoPath, botName) {
+//     // const chatId = ctx.chat.id
 
-    try {
-        const response = await ctx.replyWithVideo({ source: videoPath }, {
-            caption: botName,
-        })
+//     try {
+//         console.log("first:sendVideoTelegram:", new Date())
 
-        await updateSuccessfulRequestsVideoTT(chatId)
+        
+//         const response = await ctx.replyWithVideo({ source: videoPath }, {
+//             caption: botName,
+//         })
+//         console.log("second:sendVideoTelegram:", new Date())
 
-        return response.video.file_id
-    } catch (e) {
-        console.log('ошибка ' + e)
-    }
-}
+//         await updateSuccessfulRequestsVideoTT(ctx)
 
-async function sendVideoFromFileId(ctx, fileId, botName) {
-    const chatId = ctx.chat.id
+//         return response.video.file_id
+//     } catch (e) {
+//         console.log('ошибка ' + e)
+//     }
+// }
 
-    await ctx.replyWithVideo(fileId, {
-        caption: botName,
-    })
+// async function sendVideoFromFileId(ctx, fileId, botName) {
+//     // const chatId = ctx.chat.id
 
-    // await updateSuccessfulRequestsVideoTT(chatId)
+//     await ctx.replyWithVideo(fileId, {
+//         caption: botName,
+//     })
 
-    return
-}
+//     // await updateSuccessfulRequestsVideoTT(ctx)
+
+//     return
+// }
 
 
 module.exports = { getVideoMetadata, sendVideoTelegram, sendVideoFromFileId }

@@ -1,12 +1,13 @@
 const axios = require('axios')
 
-const { updateFailedRequestsAudioYT, updateFailedRequestsVideoTT } = require('./userUtils.js')
+const { updateFailedRequestsAudioYT, updateFailedRequestsVideoTT } = require('./dbUtils.js')
 
 
 
 
 
-async function checkYoutubeVideoUrl(ctx, chatId, link) {
+async function checkYoutubeVideoUrl(ctx, link) {
+  const chatId = ctx.chat.id
   const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11})';
   // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}'
   // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}'
@@ -18,7 +19,7 @@ async function checkYoutubeVideoUrl(ctx, chatId, link) {
 
 
   if (!match) {
-    await updateFailedRequestsAudioYT(chatId)
+    await updateFailedRequestsAudioYT(ctx)
 
     await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка, попробуйде еще раз:')
     throw new Error('Некорректная ссылка на YouTube')
@@ -34,7 +35,8 @@ async function checkYoutubeVideoUrl(ctx, chatId, link) {
 
 
 
-async function checkTiktokVideoUrl(ctx, chatId, urlTiktok) {
+async function checkTiktokVideoUrl(ctx, urlTiktok) {
+  const chatId = ctx.chat.id
   const regexString = 'https?://(?:www\\.)?tiktok\\.com/\\S*/video/(\\d+)|https?://(?:www\\.)?vm.tiktok\\.com/\\S*'
   const regex = new RegExp(regexString, 'gm')
 
@@ -51,7 +53,7 @@ async function checkTiktokVideoUrl(ctx, chatId, urlTiktok) {
       throw new Error('Ссылка не найдена!')
     }
   } catch (e) {
-    await updateFailedRequestsVideoTT(chatId)
+    await updateFailedRequestsVideoTT(ctx)
 
     await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка TikTok, попробуйте еще раз:')
   }

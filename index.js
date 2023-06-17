@@ -1,4 +1,9 @@
 const { Scenes, session, Telegraf } = require('telegraf')
+const path = require('path')
+const async = require('async')
+// const { Worker, isMainThread, parentPort, workerData, } = require('node:worker_threads')
+const { Worker } = require('worker_threads')
+
 
 const sequelize = require("./db.js")
 const { startOptions } = require("./options.js")
@@ -11,6 +16,7 @@ const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
 const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
 
 require("dotenv").config()
+
 
 const token = process.env.TOKEN_BOT
 const bot = new Telegraf(token)
@@ -43,6 +49,7 @@ bot.use(stage.middleware())
 // stage.register(audioDownloaderScene)
 // stage.register(tiktokDownloaderScene)
 
+const maxParallelTasks = 2;
 
 
 
@@ -82,26 +89,25 @@ const start = async () => {
   bot.action('downloadTikTok', async (ctx) => {
     await ctx.scene.leave('audioDownloader')
 
-    const chatId = ctx.chat.id;
     await ctx.scene.enter('tiktokDownloader')
     await ctx.reply('Введите ссылку на TikTok:')
-    await tiktokDownloader(bot, chatId, botName, tiktokDownloaderScene)
+    await tiktokDownloader(bot, botName, tiktokDownloaderScene)
   })
 
 
   bot.action('downloadAudio', async (ctx) => {
     await ctx.scene.leave('tiktokDownloader')
 
-    const chatId = ctx.chat.id
     await ctx.scene.enter('audioDownloader')
     await ctx.reply('Введите ссылку на видео:')
-    await audioDownloader(bot, chatId, botName, audioDownloaderScene)
+    await audioDownloader(bot, botName, audioDownloaderScene)
   })
+  
 
 
 
-  // audioDownloaderScene.use(limitYouTubeRequestsMiddleware)
-  // tiktokDownloaderScene.use(limitTikTokRequestsMiddleware)
+
+
   bot.launch()
 }
 

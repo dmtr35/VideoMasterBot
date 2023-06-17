@@ -1,121 +1,83 @@
 const fs = require("fs")
-const youtubedl = require("youtube-dl-exec")
+const path = require('path')
+
 
 const { AudioFile } = require("../../models.js")
-const { removeFileAsync, checkSize } = require("../../utils/fileUtils.js")
-const { updateSuccessfulRequestsAudioYT } = require("../../utils/userUtils.js")
+const { removeFileAsync, removeFilesAsync, checkSize } = require("../../utils/fileUtils.js")
+const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
+const { sendAudioTelegram, sendAudioFromFileId } = require('../../utils/telegramFunctions.js')
+const { cutAudioFile } = require('../../utils/cutFile.js')
 
 
 
 
 
-async function sendAudioTelegram(ctx, normalizedFilename, botName, audioLink, fileSize) {
-    const chatId = ctx.chat.id
-
-    const response = await ctx.replyWithAudio({ source: audioLink }, {
-        caption: botName,
-        filename: normalizedFilename,
-        contentType: "audio/mpeg",
-        fileSize: fileSize
-    })
-    console.log("response.document.file_id::00", response.audio.file_id)
-
-    await updateSuccessfulRequestsAudioYT(chatId)
-
-
-    return response.audio.file_id;
-}
-
-async function sendAudioFromFileId(ctx, normalizedFilename, botName, audioLink, fileSize) {
-    const chatId = ctx.chat.id
-
-    const response = await ctx.replyWithAudio(audioLink, {
-        caption: botName,
-        filename: normalizedFilename,
-        contentType: "audio/mpeg",
-        fileSize: fileSize,
-    })
-
-    // await updateSuccessfulRequestsAudioYT(chatId)
-
-
-    return response.audio.file_id
-}
+const workerPath = path.join(__dirname, '../../workers/downloadAudioYTWorker.js')
+let pathsArray = []
+let namesArray = []
 
 
 
-
-
-async function downloadYoutubedl(ctx, chatId, botName, videoTitle, normalizedFilename, normalVideoUrl) {
+async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, normalVideoUrl) {
     try {
-        await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId })
+        const chatId = ctx.chat.id
+        await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId });
 
-        await youtubedl(normalVideoUrl, {
-            noCheckCertificates: true,
-            noWarnings: true,
-            preferFreeFormats: true,
-            addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-            extractAudio: true,
-            audioFormat: "mp3",
-            audioMultistreams: true,
-            audioQuality: "48K",
-            output: `./downloads/${normalizedFilename}`,
-            ffmpegLocation: "/usr/bin/ffmpeg",
-        })
-            .then(async (output) => {
+        createWorkerAndDownload(normalVideoUrl, normalizedFilename, workerPath)
+            .then(async (filePath) => {
+
+                // Продолжайте обработку в основном потоке
+                fileStats = fs.statSync(filePath)
+                const fileSize = fileStats.size
+
+// --------------------------------------------------------------------------------
+                // const fileSizeBig = 58173069
+                // filePath = `./downloads/Kendra's_Language_School_Тренируйте_навык_слушания_разговорного_.mp3`
+                // normalizedFilename = `Kendra's_Language_School_Тренируйте_навык_слушания_разговорного_.mp3`
+// --------------------------------------------------------------------------------
+
+                
+
+                if (fileSize >= 1 * 1024 * 1024) {
+                    const result = await cutAudioFile(filePath, normalizedFilename, fileSize)
+                    pathsArray.push(...result[0])
+                    namesArray.push(...result[1])
+                } else {
+                    pathsArray.push(filePath)
+                    namesArray.push(normalizedFilename)
+                }
+
+                console.log("pathsArray:1:", pathsArray)
+                console.log("namesArray:1:", namesArray)
+
+                const fileId = await sendAudioTelegram(ctx, pathsArray, namesArray, botName)
+                console.log('fileId::', fileId)
+                await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId })
+                console.log("Audio file uploaded")
+
                 try {
-                    filePath = `./downloads/${normalizedFilename}`
-                    fileStats = fs.statSync(filePath)
-                    const fileSize = fileStats.size
-
-                    if (fileSize >= 50 * 1024 * 1024) { await checkSize(fileSize) }
-
-                    const fileId = await sendAudioTelegram(ctx, normalizedFilename, botName, filePath, fileSize)
-                    await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId, })
-                    console.log("Audio file uploaded")
-
-                    try {
-                        await removeFileAsync(filePath)
-                        console.log("Файл удален успешно:", filePath)
-                    } catch (error) {
-                        console.error("Ошибка при удалении файла:", error)
-                    }
+                    await removeFilesAsync(pathsArray)
+                    console.log("Файл удален успешно:", filePath)
                 } catch (error) {
-                    console.log("Error uploading audio file:", error)
+                    console.error("Ошибка при удалении файла:", error)
                 }
             })
-            .catch(async (err) => {
-                console.log("Error downloading audio file:", err)
-                return ctx.reply("Произошла ошибка при загрузке аудио файла, повторите попытку", { chatId })
+            .catch((error) => {
+                console.error("Error downloading file:", error);
+                // Обработайте ошибку в основном потоке
             })
     } catch (error) {
-        console.log("Произошла ошибка:", error);
-        return ctx.reply("Произошла ошибка при загрузке видео, повторите попытку", { chatId });
+        console.log("Error uploading audio file:", error);
+        return ctx.reply("Произошла ошибка при загрузке аудио файла, повторите попытку", { chatId });
     }
 }
 
-// function downloadFile(normalVideoUrl, normalizedFilename) {
-//     return new Promise((resolve, reject) => {
-//         youtubedl(normalVideoUrl, {
-//             noCheckCertificates: true,
-//             noWarnings: true,
-//             preferFreeFormats: true,
-//             addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-//             extractAudio: true,
-//             audioFormat: "mp3",
-//             audioMultistreams: true,
-//             audioQuality: "48K",
-//             output: `./downloads/${normalizedFilename}`,
-//             ffmpegLocation: "/usr/bin/ffmpeg",
-//         })
-//             .then((output) => {
-//                 resolve(output);
-//             })
-//             .catch((err) => {
-//                 reject(err);
-//             });
-//     });
-// }
-  
+
+
+
+
+
+
+
 
 module.exports = { sendAudioTelegram, sendAudioFromFileId, downloadYoutubedl }

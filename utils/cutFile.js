@@ -1,11 +1,12 @@
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
+const { removeFileAsync } = require("../utils/fileUtils.js")
 
 
 
 const cutAudioFile = async (filePath, baseName, fileSize) => {
-    const maxChunkSize = 1 * 1024 * 1024
+    const maxChunkSize = 50 * 1024 * 1024
     const totalChunks = Math.ceil(fileSize / maxChunkSize)
   
     const duration = await getDuration(filePath)
@@ -30,8 +31,13 @@ const cutAudioFile = async (filePath, baseName, fileSize) => {
     } catch (error) {
       console.error(`Ошибка при разрезании файла: ${error}`)
     }
-    console.error(`chunksPuths::`, chunksPuths)
-    console.error(`chunkNames::`, chunkNames)
+
+    try {
+        await removeFileAsync(filePath)
+        console.log("Файл удален успешно:", filePath)
+    } catch (error) {
+        console.error("Ошибка при удалении файла:", error)
+    }
 
     return [chunksPuths, chunkNames]
   }
@@ -48,7 +54,7 @@ const cutAudioFile = async (filePath, baseName, fileSize) => {
       console.error(`Ошибка при получении длительности видео: ${error}`);
       return 0;
     }
-  };
+  }
   
 
 

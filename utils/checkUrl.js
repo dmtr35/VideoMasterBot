@@ -6,7 +6,7 @@ const { updateFailedRequestsAudioYT, updateFailedRequestsVideoTT } = require('./
 
 
 
-async function checkYoutubeVideoUrl(ctx, link) {
+async function checkYoutubeVideoUrl(ctx, link, message_id) {
   const chatId = ctx.chat.id
   const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11})';
   // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}'
@@ -21,7 +21,7 @@ async function checkYoutubeVideoUrl(ctx, link) {
   if (!match) {
     await updateFailedRequestsAudioYT(ctx)
 
-    await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка, попробуйде еще раз:')
+    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на YouTube, попробуйде еще раз:`)
     throw new Error('Некорректная ссылка на YouTube')
   }
 
@@ -35,7 +35,7 @@ async function checkYoutubeVideoUrl(ctx, link) {
 
 
 
-async function checkTiktokVideoUrl(ctx, urlTiktok) {
+async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   const chatId = ctx.chat.id
   const regexString = 'https?://(?:www\\.)?tiktok\\.com/\\S*/video/(\\d+)|https?://(?:www\\.)?vm.tiktok\\.com/\\S*'
   const regex = new RegExp(regexString, 'gm')
@@ -55,7 +55,9 @@ async function checkTiktokVideoUrl(ctx, urlTiktok) {
   } catch (e) {
     await updateFailedRequestsVideoTT(ctx)
 
-    await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка TikTok, попробуйте еще раз:')
+    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на TikTok, попробуйте еще раз:`)
+
+    // await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка TikTok, попробуйте еще раз:')
   }
 }
 

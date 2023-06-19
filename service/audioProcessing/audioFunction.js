@@ -3,7 +3,7 @@ const path = require('path')
 
 
 const { AudioFile } = require("../../models.js")
-const { removeFileAsync, removeFilesAsync, checkSize } = require("../../utils/fileUtils.js")
+const { removeFilesAsync } = require("../../utils/fileUtils.js")
 const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
 const { sendAudioTelegram, sendAudioFromFileId } = require('../../utils/telegramFunctions.js')
 const { cutAudioFile } = require('../../utils/cutFile.js')
@@ -18,27 +18,20 @@ let namesArray = []
 
 
 
-async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, normalVideoUrl) {
+async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, normalVideoUrl, message_id) {
     try {
         const chatId = ctx.chat.id
-        await ctx.reply(`Загрузка видео "${videoTitle.substr(0, 15)}.." началась, ожидайте`, { chatId });
 
+        await ctx.telegram.editMessageText(chatId, message_id, message_id, `Началась загрузка ролика ⏳`)
         createWorkerAndDownload(normalVideoUrl, normalizedFilename, workerPath)
             .then(async (filePath) => {
 
-                // Продолжайте обработку в основном потоке
                 fileStats = fs.statSync(filePath)
                 const fileSize = fileStats.size
 
-// --------------------------------------------------------------------------------
-                // const fileSizeBig = 58173069
-                // filePath = `./downloads/Kendra's_Language_School_Тренируйте_навык_слушания_разговорного_.mp3`
-                // normalizedFilename = `Kendra's_Language_School_Тренируйте_навык_слушания_разговорного_.mp3`
-// --------------------------------------------------------------------------------
+                if (fileSize >= 50 * 1024 * 1024) {
+                    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл слишком большой, режем на части 🪚`)
 
-                
-
-                if (fileSize >= 1 * 1024 * 1024) {
                     const result = await cutAudioFile(filePath, normalizedFilename, fileSize)
                     pathsArray.push(...result[0])
                     namesArray.push(...result[1])
@@ -47,13 +40,12 @@ async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, n
                     namesArray.push(normalizedFilename)
                 }
 
-                console.log("pathsArray:1:", pathsArray)
-                console.log("namesArray:1:", namesArray)
-
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл скачан и обработан, отправляем 💽`)
                 const fileId = await sendAudioTelegram(ctx, pathsArray, namesArray, botName)
                 console.log('fileId::', fileId)
-                await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId })
+                // await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId })
                 console.log("Audio file uploaded")
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
 
                 try {
                     await removeFilesAsync(pathsArray)
@@ -64,7 +56,6 @@ async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, n
             })
             .catch((error) => {
                 console.error("Error downloading file:", error);
-                // Обработайте ошибку в основном потоке
             })
     } catch (error) {
         console.log("Error uploading audio file:", error);

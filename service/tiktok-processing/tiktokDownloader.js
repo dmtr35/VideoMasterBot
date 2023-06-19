@@ -3,6 +3,7 @@ const { VideoTiktok } = require('../../models.js')
 const { checkTiktokVideoUrl } = require('../../utils/checkUrl.js')
 const { getVideoMetadata, sendVideoFromFileId } = require('./tiktokFunction.js')
 
+const { messagesSubmitDelete } = require("../../messages/messagesSubmit.js")
 
 
 
@@ -10,14 +11,19 @@ const { getVideoMetadata, sendVideoFromFileId } = require('./tiktokFunction.js')
 
 
 
-async function tiktokDownloader(bot, botName, tiktokDownloaderScene) {
-
+async function tiktokDownloader( bot, botName, tiktokDownloaderScene, messageSubmitIds) {
+    
     tiktokDownloaderScene.hears(/.*/, async (ctx) => {
+        const chatId = ctx.chat.id
+        const { message_id } = await ctx.reply(`Обработка началась, ожидайте ⚙️`, { chatId })
+
+        // await messagesSubmitDelete(ctx, messageSubmitIds)
+
         try {
             // const chatId = ctx.chat.id;
             let videoUrl = ctx.message.text
 
-            const { videoUrlId, videoFullUrl } = await checkTiktokVideoUrl(ctx, videoUrl)
+            const { videoUrlId, videoFullUrl } = await checkTiktokVideoUrl(ctx, videoUrl, message_id)
             console.log('videoFullUrl::', videoFullUrl)
             try {
                 const videoFile = await VideoTiktok.findOne({ where: { videoLink: videoFullUrl } })
@@ -26,7 +32,7 @@ async function tiktokDownloader(bot, botName, tiktokDownloaderScene) {
                     console.log('Запись о файле не найдена в базе данных')
                     console.log('videoFullUrl::', videoFullUrl)
 
-                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName)
+                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
                     return console.log('файл отправлен')
                 }
                 const telegramFile = await bot.telegram.getFile(videoFile.fileVideoId)
@@ -35,7 +41,7 @@ async function tiktokDownloader(bot, botName, tiktokDownloaderScene) {
                     await sendVideoFromFileId(ctx, videoFile.fileVideoId, botName)
                 } else {
                     await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
-                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName)
+                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
 
                     return console.log('файл отправлен')
                 }

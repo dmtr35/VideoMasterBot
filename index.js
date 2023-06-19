@@ -12,6 +12,8 @@ const { User } = require("./models.js")
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
 
+const { messagesSubmitDelete } = require("./messages/messagesSubmit.js")
+
 const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
 const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
 
@@ -49,7 +51,7 @@ bot.use(stage.middleware())
 // stage.register(audioDownloaderScene)
 // stage.register(tiktokDownloaderScene)
 
-const maxParallelTasks = 2;
+let messageSubmitIds = []
 
 
 
@@ -63,6 +65,8 @@ const start = async () => {
 
   const handleStartCommand = async (ctx) => {
     await ctx.scene.leave()
+    // await messagesSubmitDelete(ctx, messageSubmitIds)
+    // messageSubmitIds = []
 
     const chatId = ctx.chat.id
     try {
@@ -90,8 +94,12 @@ const start = async () => {
     await ctx.scene.leave('audioDownloader')
 
     await ctx.scene.enter('tiktokDownloader')
-    await ctx.reply('Введите ссылку на TikTok:')
-    await tiktokDownloader(bot, botName, tiktokDownloaderScene)
+    const { message_id } = await ctx.reply('Введите ссылку на TikTok:')
+
+    // messageSubmitIds.push(message_id)
+
+    // console.log('messageSubmitIds:1:', messageSubmitIds)
+    await tiktokDownloader(bot, botName, tiktokDownloaderScene, messageSubmitIds)
   })
 
 
@@ -99,8 +107,13 @@ const start = async () => {
     await ctx.scene.leave('tiktokDownloader')
 
     await ctx.scene.enter('audioDownloader')
-    await ctx.reply('Введите ссылку на видео:')
-    await audioDownloader(bot, botName, audioDownloaderScene)
+    const { message_id } = await ctx.reply('Введите ссылку на видео:')
+
+    // messageSubmitIds.push(message_id)
+
+    // console.log('messageSubmitIds:2:', messageSubmitIds)
+
+    await audioDownloader(bot, botName, audioDownloaderScene, messageSubmitIds)
   })
   
 

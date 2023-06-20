@@ -1,9 +1,4 @@
 const { Scenes, session, Telegraf } = require('telegraf')
-const path = require('path')
-const async = require('async')
-// const { Worker, isMainThread, parentPort, workerData, } = require('node:worker_threads')
-const { Worker } = require('worker_threads')
-
 
 const sequelize = require("./db.js")
 const { startOptions } = require("./options.js")
@@ -11,8 +6,6 @@ const { User } = require("./models.js")
 
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
-
-const { messagesSubmitDelete } = require("./messages/messagesSubmit.js")
 
 const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
 const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
@@ -22,36 +15,25 @@ require("dotenv").config()
 
 const token = process.env.TOKEN_BOT
 const bot = new Telegraf(token)
-// bot.use(blockMiddleware)
-// bot.use(limitRequestsMiddleware)
-
-// bot.use(limitYouTubeRequestsMiddleware)
-// bot.use(limitTikTokRequestsMiddleware)
-
 const botName = "скачано с помощью @MediaWizardBot"
+
+bot.use(blockMiddleware)
+bot.use(limitRequestsMiddleware)
+
 
 const audioDownloaderScene = new Scenes.BaseScene('audioDownloader')
 const tiktokDownloaderScene = new Scenes.BaseScene('tiktokDownloader')
 
 
-// audioDownloaderScene.use(limitYouTubeRequestsMiddleware)
-// tiktokDownloaderScene.use(limitTikTokRequestsMiddleware)
+audioDownloaderScene.use(limitYouTubeRequestsMiddleware)
+tiktokDownloaderScene.use(limitTikTokRequestsMiddleware)
 
 
-const stage = new Scenes.Stage([audioDownloaderScene, tiktokDownloaderScene],
-  //    {
-  //   ttl: 0,
-  // }
-)
+const stage = new Scenes.Stage([audioDownloaderScene, tiktokDownloaderScene])
 
 
 bot.use(session())
 bot.use(stage.middleware())
-
-// stage.register(audioDownloaderScene)
-// stage.register(tiktokDownloaderScene)
-
-let messageSubmitIds = []
 
 
 
@@ -65,10 +47,8 @@ const start = async () => {
 
   const handleStartCommand = async (ctx) => {
     await ctx.scene.leave()
-    // await messagesSubmitDelete(ctx, messageSubmitIds)
-    // messageSubmitIds = []
-
     const chatId = ctx.chat.id
+
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
@@ -88,18 +68,13 @@ const start = async () => {
 
 
 
-
-
   bot.action('downloadTikTok', async (ctx) => {
     await ctx.scene.leave('audioDownloader')
 
     await ctx.scene.enter('tiktokDownloader')
-    const { message_id } = await ctx.reply('Введите ссылку на TikTok:')
+    await ctx.reply('Введите ссылку на TikTok:')
 
-    // messageSubmitIds.push(message_id)
-
-    // console.log('messageSubmitIds:1:', messageSubmitIds)
-    await tiktokDownloader(bot, botName, tiktokDownloaderScene, messageSubmitIds)
+    await tiktokDownloader(bot, botName, tiktokDownloaderScene)
   })
 
 
@@ -107,13 +82,9 @@ const start = async () => {
     await ctx.scene.leave('tiktokDownloader')
 
     await ctx.scene.enter('audioDownloader')
-    const { message_id } = await ctx.reply('Введите ссылку на видео:')
+    await ctx.reply('Введите ссылку на видео:')
 
-    // messageSubmitIds.push(message_id)
-
-    // console.log('messageSubmitIds:2:', messageSubmitIds)
-
-    await audioDownloader(bot, botName, audioDownloaderScene, messageSubmitIds)
+    await audioDownloader(bot, botName, audioDownloaderScene)
   })
   
 

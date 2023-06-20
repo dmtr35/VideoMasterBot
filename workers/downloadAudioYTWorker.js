@@ -17,7 +17,7 @@ function downloadAudioYTWorker(videoUrl, fileName) {
         extractAudio: true,
         audioFormat: "mp3",
         audioMultistreams: true,
-        audioQuality: "48K",
+        audioQuality: "128K",
         output: outputFilePath,
         ffmpegLocation: "/usr/bin/ffmpeg",
     };

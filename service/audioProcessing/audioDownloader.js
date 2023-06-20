@@ -4,7 +4,6 @@ const youtubedl = require("youtube-dl-exec")
 const { sendAudioFromFileId, downloadYoutubedl } = require("./audioFunction.js")
 const { checkYoutubeVideoUrl } = require("../../utils/checkUrl.js")
 const { AudioFile } = require("../../models.js")
-const { messagesSubmitDelete } = require("../../messages/messagesSubmit.js")
 
 
 
@@ -17,7 +16,7 @@ const flags = {
   addHeader: ["referer:youtube.com", "user-agent:googlebot"]
 }
 
-async function audioDownloader(bot, botName, audioDownloaderScene, messageSubmitIds) {
+async function audioDownloader(bot, botName, audioDownloaderScene) {
 
   audioDownloaderScene.hears(/.*/, async (ctx) => {
     const chatId = ctx.chat.id
@@ -64,7 +63,7 @@ async function audioDownloader(bot, botName, audioDownloaderScene, messageSubmit
         )
 
         if (results.every((result) => result)) {
-          await sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName)
+          await sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, message_id)
         }
       } catch (error) {
         await AudioFile.destroy({ where: { videoLink: normalVideoUrl } })

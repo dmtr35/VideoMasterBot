@@ -30,11 +30,12 @@ const removeFilesAsync = async (paths) => {
 
 
 
-const checkSize = async (ctx, fileSize) => {
+const checkSize = async (ctx, fileSize, message_id) => {
   const chatId = ctx.chat.id
   const fileSizeInMB = fileSize / 1048576
   const roundedFileSizeInMB = fileSizeInMB.toFixed(2)
-  return ctx.reply(`Файл занимает ${roundedFileSizeInMB}Mb. Файлы свыше 50 Mb пока что не поддерживаются`, { chatId })
+  return ctx.telegram.editMessageText(chatId, message_id, message_id, `🚨Файл занимает ${roundedFileSizeInMB}Mb. Файлы свыше 50 Mb пока что не поддерживаются 😢`)
+
 }
 
 
@@ -44,4 +45,8 @@ const checkSize = async (ctx, fileSize) => {
 
 
 
-module.exports = { removeFileAsync, removeFilesAsync, checkSize }
+module.exports = {
+  removeFileAsync,
+  removeFilesAsync,
+  checkSize
+}

@@ -25,7 +25,8 @@ async function sendAudioTelegram(ctx, pathsArray, namesArray, botName) {
     return fileIdsString
 }
 
-async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName) {
+async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, message_id) {
+    const chatId = ctx.chat.id
 
     for (let i = 0; i < audioIds.length; i++) {
         const path = audioIds[i]
@@ -37,6 +38,7 @@ async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName) {
           contentType: "audio/mpeg",
         })
     }
+    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
 
     return 
 }
@@ -65,12 +67,15 @@ async function sendVideoTelegram(ctx, videoPath, botName) {
     }
 }
 
-async function sendVideoFromFileId(ctx, fileId, botName) {
+async function sendVideoFromFileId(ctx, fileId, botName, message_id) {
+    const chatId = ctx.chat.id
 
+    
     await ctx.replyWithVideo(fileId, {
         caption: botName,
     })
-
+    
+    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
     return
 }
 

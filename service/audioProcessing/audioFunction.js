@@ -43,7 +43,7 @@ async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, n
                 await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл скачан и обработан, отправляем 💽`)
                 const fileId = await sendAudioTelegram(ctx, pathsArray, namesArray, botName)
                 console.log('fileId::', fileId)
-                // await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId })
+                await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId })
                 console.log("Audio file uploaded")
                 await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
 

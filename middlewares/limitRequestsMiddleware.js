@@ -31,11 +31,11 @@ const limitRequestsMiddleware = async (ctx, next) => {
                 await user.save()
 
                 // Возвращаем ошибку пользователю
-                const blockDuration = blockHours === 1 ? '1 час' : `${blockHours} часов`;
-                return ctx.reply(`За ${warningCount} предупреждение, за частые запросы, вы получаете ${blockDuration} бана.`);
+                const blockDuration = blockHours === 1 ? '1 час' : `${blockHours} часов`
+                return ctx.reply(`За ${warningCount} предупреждение, за частые запросы, вы получаете ${blockDuration} бана.`)
             } else {
                 // Предупреждаем пользователя о возможных последствиях за частые запросы
-                return ctx.reply('Ваши делаете запросы слишком часто. Пожалуйста, учтите, что за частые запросы ваш аккаунт может быть временно заблокирован.');
+                return ctx.reply('Вы делаете запросы слишком часто. Пожалуйста, учтите, что за частые запросы ваш аккаунт может быть временно заблокирован.')
             }
         } else {
             // Проверяем, прошла ли неделя с момента последнего предупреждения
@@ -81,7 +81,7 @@ const limitTikTokRequestsMiddleware = async (ctx, next) => {
       const successfulRequests = user.successfulRequestsVideoTT
   
       // Проверяем, достигнуто ли ограничение на число удачных запросов в день
-      if (successfulRequests >= 20) {
+      if (successfulRequests >= 50) {
         await ctx.scene.leave() // Выходим из текущей сцены
         await ctx.reply('Вы достигли лимита запросов для TikTok на сегодня:', startOptions)
 
@@ -116,9 +116,9 @@ const limitTikTokRequestsMiddleware = async (ctx, next) => {
       const successfulRequests = user.successfulRequestsAudioYT
   
       // Проверяем, достигнуто ли ограничение на число удачных запросов в день
-      if (successfulRequests >= 100) {
+      if (successfulRequests >= 50) {
         await ctx.scene.leave() // Выходим из текущей сцены
-        await ctx.reply('Вы достигли лимита запросов для YouTube на сегодня.:', startOptions)
+        await ctx.reply('Вы достигли лимита запросов для YouTube на сегодня, можете выбрать другую функцию:', startOptions)
 
         return
       }

@@ -1,10 +1,8 @@
 
 const axios = require('axios')
 const path = require('path')
-const fs = require('fs')
 
 const { VideoTiktok } = require('../../models.js')
-// const { updateSuccessfulRequestsVideoTT } = require("../../utils/dbUtils.js")
 const { removeFileAsync, checkSize } = require("../../utils/fileUtils.js")
 const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
 const { sendVideoTelegram, sendVideoFromFileId } = require('../../utils/telegramFunctions.js')
@@ -32,7 +30,7 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
         console.log('videoUrlId::', videoUrlId)
 
         const { videoUrl, author, title, fileSize } = await getDownloadLink(videoUrlId)
-        if (fileSize >= 50 * 1024 * 1024) { return checkSize(ctx, fileSize) }
+        if (fileSize >= 50 * 1024 * 1024) { return checkSize(ctx, fileSize, message_id) }
 
 
         let processedAuthor = author
@@ -56,7 +54,7 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
 
                 await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл скачан и обработан, отправляем 💽`)
                 const fileId = await sendVideoTelegram(ctx, filePath, botName)
-                // await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId })
+                await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId })
                 await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
 
                 try {
@@ -83,30 +81,7 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
 
 
 
-// async function getDownloadLink(id) {
-//     const header = headers[currentIndex]
-//     try {
-//         console.log('header::', headerf)
-//         const res = await axios.get('https://api2.musical.ly/aweme/v1/feed/?aweme_id=' + id, { headers: header })
-//         const filtered = res.data.aweme_list.find(x => x.aweme_id == id)
-//         return {
-//             videoUrl: filtered.video.play_addr.url_list[0],
-//             author: filtered.author.unique_id,
-//             title: filtered.desc,
-//             fileSize: filtered.video.play_addr.data_size
-//         };
-//     } catch (error) {
-//         fs.appendFileSync('error_log/cookie_error_log.txt', `COOKIE_${currentIndex} не актуальны\n`)
 
-//         // Переключаемся на следующую cookie
-//         currentIndex = (currentIndex + 1) % headers.length
-
-//         // Рекурсивно вызываем функцию с новой cookie
-//         return getDownloadLink(id)
-//     }
-// }
-
-// =============================================================
 async function getDownloadLink(id) {
     const res = await axios.get('https://api2.musical.ly/aweme/v1/feed/?aweme_id=' + id, { headers })
     const filtered = res.data.aweme_list.find(x => x.aweme_id == id)
@@ -117,19 +92,9 @@ async function getDownloadLink(id) {
         fileSize: filtered.video.play_addr.data_size
     }
 }
-// =============================================================
 
 
 
 
 module.exports = { getVideoMetadata, sendVideoTelegram, sendVideoFromFileId }
 
-
-
-
-
-
-// {
-//     'user-agent': 'com.zhiliaoapp.musically/2022405010 (Android; Android 10; en_US)',
-//     cookie: process.env.COOKIE_03
-//   }

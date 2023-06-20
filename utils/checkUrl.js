@@ -33,8 +33,6 @@ async function checkYoutubeVideoUrl(ctx, link, message_id) {
 
 
 
-
-
 async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   const chatId = ctx.chat.id
   const regexString = 'https?://(?:www\\.)?tiktok\\.com/\\S*/video/(\\d+)|https?://(?:www\\.)?vm.tiktok\\.com/\\S*'
@@ -56,13 +54,8 @@ async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
     await updateFailedRequestsVideoTT(ctx)
 
     await ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на TikTok, попробуйте еще раз:`)
-
-    // await ctx.telegram.sendMessage(chatId, 'Некорректная ссылка TikTok, попробуйте еще раз:')
   }
 }
-
-
-
 
 
 

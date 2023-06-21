@@ -1,28 +1,24 @@
 const { parentPort, workerData, } = require('node:worker_threads')
-const { videoUrl, fileName } = workerData
+const { videoUrl, fileName, options } = workerData
 const youtubedl = require('youtube-dl-exec')
 
 
 
-
-
-function downloadAudioYTWorker(videoUrl, fileName) {
+function downloadAudioYTWorker(videoUrl, fileName, options) {
     const outputFilePath = `./downloads/${fileName}`
 
-    const options = {
+    const defaultOptions = {
         noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
         addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-        extractAudio: true,
-        audioFormat: "mp3",
-        audioMultistreams: true,
-        audioQuality: "128K",
         output: outputFilePath,
         ffmpegLocation: "/usr/bin/ffmpeg",
-    };
+    }
 
-    return youtubedl(videoUrl, options)
+    const mergedOptions = { ...defaultOptions, ...options }
+
+    return youtubedl(videoUrl, mergedOptions)
         .then(() => {
             console.log("File downloaded successfully")
             return outputFilePath
@@ -30,10 +26,12 @@ function downloadAudioYTWorker(videoUrl, fileName) {
         .catch((err) => {
             console.error("Error downloading file:", err)
             throw new Error('File download failed')
-        });
+        })
 }
 
-downloadAudioYTWorker(videoUrl, fileName)
+
+
+downloadAudioYTWorker(videoUrl, fileName, options)
     .then((result) => {
         parentPort.postMessage(result)
     })

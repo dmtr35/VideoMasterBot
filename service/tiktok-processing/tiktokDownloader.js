@@ -2,6 +2,7 @@ const { VideoTiktok } = require('../../models.js')
 
 const { checkTiktokVideoUrl } = require('../../utils/checkUrl.js')
 const { getVideoMetadata, sendVideoFromFileId } = require('./tiktokFunction.js')
+const { downloadYoutubedlShorts } = require('../YTShortsProcessing/YTShortsDownloader.js')
 
 
 
@@ -21,13 +22,17 @@ async function tiktokDownloader( bot, botName, tiktokDownloaderScene) {
             let videoUrl = ctx.message.text
 
             const { videoUrlId, videoFullUrl } = await checkTiktokVideoUrl(ctx, videoUrl, message_id)
+
             try {
                 const videoFile = await VideoTiktok.findOne({ where: { videoLink: videoFullUrl } })
 
                 if (!videoFile) {
                     console.log('Запись о файле не найдена в базе данных')
-
-                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
+                    if (videoFullUrl.includes('https://www.youtube')) {
+                        await downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id)
+                } else {
+                        await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
+                    }
                     return console.log('файл отправлен')
                 }
                 const telegramFile = await bot.telegram.getFile(videoFile.fileVideoId)
@@ -36,8 +41,11 @@ async function tiktokDownloader( bot, botName, tiktokDownloaderScene) {
                     await sendVideoFromFileId(ctx, videoFile.fileVideoId, botName, message_id)
                 } else {
                     await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
-                    await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
-
+                    if (videoFullUrl.includes('https://www.youtube')) {
+                        await downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id)
+                    } else {
+                        await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
+                    }
                     return console.log('файл отправлен')
                 }
             } catch (error) {
@@ -45,6 +53,7 @@ async function tiktokDownloader( bot, botName, tiktokDownloaderScene) {
             }
         } catch (error) {
             console.error('Произошла ошибка глобального try/catch (tiktokDownloader): ', error);
+            return ctx.telegram.editMessageText(chatId, message_id, message_id, `Загрузка не удалась, попробуйте еще раз:`)
         }
     })
 

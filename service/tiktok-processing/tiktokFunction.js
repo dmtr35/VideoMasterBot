@@ -73,8 +73,8 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
 
 
     } catch (error) {
-        await ctx.telegram.sendMessage(chatId, 'Загрузка не удалась, попробуйте еще раз:')
         console.log(`[ ${videoTitle} got error while trying to get video data! ] ===== [skipped]`)
+        return ctx.telegram.editMessageText(chatId, message_id, message_id, `Загрузка не удалась, попробуйте еще раз:`)
     }
 }
 

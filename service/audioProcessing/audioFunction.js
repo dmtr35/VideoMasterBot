@@ -8,7 +8,12 @@ const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
 const { sendAudioTelegram, sendAudioFromFileId } = require('../../utils/telegramFunctions.js')
 const { cutAudioFile } = require('../../utils/cutFile.js')
 
-
+const audioOptions = {
+    extractAudio: true,
+    audioFormat: "mp3",
+    audioMultistreams: true,
+    audioQuality: "128K",
+}
 
 
 
@@ -18,12 +23,12 @@ let namesArray = []
 
 
 
-async function downloadYoutubedl(ctx, botName, videoTitle, normalizedFilename, normalVideoUrl, message_id) {
+async function downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUrl, message_id) {
     try {
         const chatId = ctx.chat.id
 
         await ctx.telegram.editMessageText(chatId, message_id, message_id, `Началась загрузка ролика ⏳`)
-        createWorkerAndDownload(normalVideoUrl, normalizedFilename, workerPath)
+        createWorkerAndDownload(normalVideoUrl, normalizedFilename, workerPath, audioOptions)
             .then(async (filePath) => {
 
                 fileStats = fs.statSync(filePath)

@@ -1,4 +1,3 @@
-const { updateSuccessfulRequestsAudioYT, updateSuccessfulRequestsVideoTT } = require("./dbUtils.js")
 
 
 
@@ -20,7 +19,6 @@ async function sendAudioTelegram(ctx, pathsArray, namesArray, botName) {
     }
 
     const fileIdsString = fileIds.join(" ")
-    await updateSuccessfulRequestsAudioYT(ctx)
 
     return fileIdsString
 }
@@ -48,7 +46,6 @@ async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, m
 
 
 async function sendVideoTelegram(ctx, videoPath, botName) {
-    // const chatId = ctx.chat.id
 
     try {
         console.log("first:sendVideoTelegram:", new Date())
@@ -59,7 +56,6 @@ async function sendVideoTelegram(ctx, videoPath, botName) {
         })
         console.log("second:sendVideoTelegram:", new Date())
 
-        await updateSuccessfulRequestsVideoTT(ctx)
 
         return response.video.file_id
     } catch (e) {

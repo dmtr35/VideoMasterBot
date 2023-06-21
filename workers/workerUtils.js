@@ -3,15 +3,20 @@ const { Worker } = require('node:worker_threads')
 
 
 
-function createWorkerAndDownload(videoUrl, fileName, workerPath) {
+function createWorkerAndDownload(videoUrl, fileName, workerPath, options) {
     return new Promise((resolve, reject) => {
+        const workerData = { videoUrl, fileName, options }
+
+        if (options) {
+            workerData.options = options
+        }
+
         const worker = new Worker(workerPath, {
-            workerData: { videoUrl, fileName },
-        });
+            workerData,
+        })
         
         worker.on('message', (filePath) => {
             worker.terminate()
-            console.log('filePath:0:', filePath)
             resolve(filePath)
         });
 
@@ -27,6 +32,8 @@ function createWorkerAndDownload(videoUrl, fileName, workerPath) {
         })
     })
 }
+
+
 
 
 

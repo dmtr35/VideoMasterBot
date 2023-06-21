@@ -9,6 +9,7 @@ const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownload
 
 const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
 const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
+const { infoMessage } = require('./massege.js')
 
 require("dotenv").config()
 
@@ -52,10 +53,10 @@ const start = async () => {
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
-        return ctx.reply('Выберите опцию1:', startOptions)
+        return ctx.reply('Выберите опцию:', startOptions)
       }
       await User.create({ chatId })
-      return ctx.reply('Выберите опцию2:', startOptions)
+      return ctx.reply('Выберите опцию:', startOptions)
     } catch (e) {
       return ctx.reply('Произошла ошибка')
     }
@@ -65,7 +66,14 @@ const start = async () => {
   audioDownloaderScene.command('start', handleStartCommand)
   tiktokDownloaderScene.command('start', handleStartCommand)
 
-
+  const info = async (ctx) => {
+    try {
+      await ctx.replyWithHTML(infoMessage)
+    } catch (error) {
+      console.error('Error sending info message:', error)
+    }
+  }
+  bot.command('info', info)
 
 
   bot.action('downloadTikTok', async (ctx) => {

@@ -1,6 +1,11 @@
 const axios = require('axios')
 
-const { updateFailedRequestsAudioYT, updateFailedRequestsVideoTT } = require('./dbUtils.js')
+const {
+  updateSuccessfulRequestsAudioYT,
+  updateSuccessfulRequestsVideoTT,
+  updateFailedRequestsAudioYT,
+  updateFailedRequestsVideoTT
+} = require('./dbUtils.js')
 
 
 
@@ -9,23 +14,19 @@ const { updateFailedRequestsAudioYT, updateFailedRequestsVideoTT } = require('./
 async function checkYoutubeVideoUrl(ctx, link, message_id) {
   const chatId = ctx.chat.id
   const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11})';
-  // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}'
-  // const regexString = 'https?://(?:www\\.)?m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}'
-  // const regexString = 'https?://(?:www\\.)?youtube\\.com/shorts/[A-Za-z0-9-_]{11}'
-  // const regexString = 'https?://(?:www\\.)?youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}';
 
   const regex = new RegExp(regexString)
   const match = await regex.exec(link)
 
-
   if (!match) {
     await updateFailedRequestsAudioYT(ctx)
 
-    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на YouTube, попробуйде еще раз:`)
     throw new Error('Некорректная ссылка на YouTube')
   }
 
   const videoUrl = match[0]
+
+  await updateSuccessfulRequestsAudioYT(ctx)
 
   return videoUrl.toString()
 }
@@ -35,17 +36,20 @@ async function checkYoutubeVideoUrl(ctx, link, message_id) {
 
 async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   const chatId = ctx.chat.id
-  const regexString = 'https?://(?:www\\.)?tiktok\\.com/\\S*/video/(\\d+)|https?://(?:www\\.)?vm.tiktok\\.com/\\S*'
+  const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|tiktok\\.com/\\S*/video/(\\d+)|vm.tiktok\\.com/\\S*)'
   const regex = new RegExp(regexString, 'gm')
 
   try {
     const response = await axios.get(urlTiktok)
     const responseHtml = response.data
-    const match = await regex.exec(responseHtml);
+    const match = await regex.exec(responseHtml)
 
     if (match) {
       const videoFullUrl = match[0]
       const videoUrlId = match[1]
+
+      await updateSuccessfulRequestsVideoTT(ctx)
+
       return { videoUrlId, videoFullUrl }
     } else {
       throw new Error('Ссылка не найдена!')
@@ -53,7 +57,7 @@ async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   } catch (e) {
     await updateFailedRequestsVideoTT(ctx)
 
-    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на TikTok, попробуйте еще раз:`)
+    return ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на видео, попробуйте еще раз:`)
   }
 }
 

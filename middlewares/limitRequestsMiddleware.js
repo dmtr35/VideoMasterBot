@@ -15,7 +15,7 @@ const limitRequestsMiddleware = async (ctx, next) => {
         const timeDifference = currentDate - previousRequestDate
 
         // Проверяем, прошло ли достаточное время с предыдущего запроса
-        if (timeDifference < 1000) { // Например, 1000 миллисекунд (1 секунда)
+        if (timeDifference < 2000) { // Например, 1000 миллисекунд (1 секунда)
             // Увеличиваем количество предупреждений
             const warningCount = user.warningCount + 1
             user.warningCount = warningCount

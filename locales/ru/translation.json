@@ -1,0 +1,22 @@
+
+
+{
+    "start": "ru_Скачать TikTok / YouTube Shorts",
+    "audio": "ru_Скачать аудио YouTube ролика",
+    "select_option": "ru_Для начала выберите опцию:",
+    "botName": "ru_скачано с помощью @MediaWizardBot",
+    "select_language": "ru_Выберите предпочтительный язык:",
+
+
+
+
+    "enter_tiktok": "ru_Введите ссылку на TikTok/Shorts:",
+    "enter_YouTube": "ru_Введите ссылку на видео YouTube:",
+    
+    
+
+    
+    "error": "ru_Произошла ошибка:",
+    "error_update_language": "ru_Ошибка при обновлении языка пользователя:"
+}
+

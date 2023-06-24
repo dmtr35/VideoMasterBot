@@ -1,23 +1,29 @@
 const { Scenes, session, Telegraf } = require('telegraf')
-
 const sequelize = require("./db.js")
-const { startOptions } = require("./options.js")
+
+const { getStartOptions, getLanguagesOptions } = require("./options.js")
+const { getAndCreateUser } = require('./utils/userUtils.js')
+const { langObject } = require('./langObject.js')
 const { User } = require("./models.js")
 
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
 
+
+const { langMiddleware } = require('./middlewares/langMiddleware.js')
 const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
 const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
-const { infoMessage } = require('./massege.js')
+
 
 require("dotenv").config()
 
 
 const token = process.env.TOKEN_BOT
 const bot = new Telegraf(token)
-const botName = "скачано с помощью @MediaWizardBot"
+const languages = ['ru', 'en']
 
+
+bot.use(langMiddleware)
 bot.use(blockMiddleware)
 bot.use(limitRequestsMiddleware)
 
@@ -33,12 +39,15 @@ tiktokDownloaderScene.use(limitTikTokRequestsMiddleware)
 const stage = new Scenes.Stage([audioDownloaderScene, tiktokDownloaderScene])
 
 
+
 bot.use(session())
 bot.use(stage.middleware())
 
 
 
-const start = async () => {
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+const start = async (ctx) => {
+
   try {
     await sequelize.authenticate()
     await sequelize.sync()
@@ -46,57 +55,156 @@ const start = async () => {
     console.log('Подключение к бд сломалось', e)
   }
 
+
+
+
+// _______________________________________________________________________________________
   const handleStartCommand = async (ctx) => {
     await ctx.scene.leave()
     const chatId = ctx.chat.id
+    const userLanguage = ctx.language
 
     try {
       const user = await User.findOne({ where: { chatId } })
       if (user) {
-        return ctx.reply('Выберите опцию:', startOptions)
+        const startOptions = getStartOptions(ctx)
+        return ctx.reply(langObject[userLanguage].select_option, startOptions)
+      } else {
+        const languagesOptions = getLanguagesOptions(ctx)
+        return ctx.reply(langObject[userLanguage].select_language, languagesOptions)
       }
-      await User.create({ chatId })
-      return ctx.reply('Выберите опцию:', startOptions)
     } catch (e) {
-      return ctx.reply('Произошла ошибка')
+      return ctx.reply(langObject[userLanguage].error)
     }
   }
-
   bot.command('start', handleStartCommand)
   audioDownloaderScene.command('start', handleStartCommand)
   tiktokDownloaderScene.command('start', handleStartCommand)
 
-  const info = async (ctx) => {
+// _______________________________________________________________________________________
+
+  const handleInfoCommand = async (ctx) => {
+    const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+
+    await getAndCreateUser(chatId)
+
+    await ctx.scene.leave()
     try {
-      await ctx.replyWithHTML(infoMessage)
+      const startOptions = getStartOptions(ctx)
+      await ctx.replyWithHTML(langObject[userLanguage].infoMessage, startOptions)
     } catch (error) {
       console.error('Error sending info message:', error)
     }
   }
-  bot.command('info', info)
+  bot.command('info', handleInfoCommand)
+  audioDownloaderScene.command('info', handleInfoCommand)
+  tiktokDownloaderScene.command('info', handleInfoCommand)
+
+// _______________________________________________________________________________________
+  const handleLanguageCommand = async (ctx) => {
+    const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+
+    await getAndCreateUser(chatId)
+
+    await ctx.scene.leave()
+    try {
+      const languagesOptions = getLanguagesOptions(ctx)
+      return ctx.reply(langObject[userLanguage].select_language, languagesOptions)
+    } catch (error) {
+      console.error('Error sending language message:', error)
+    }
+  }
+  bot.command('language', handleLanguageCommand)
+  audioDownloaderScene.command('language', handleLanguageCommand)
+  tiktokDownloaderScene.command('language', handleLanguageCommand)
+// ______________________________________________________________________________________
 
 
+  // ------------------------------------------------------------------------------------
   bot.action('downloadTikTok', async (ctx) => {
+    const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+    const botName = langObject[userLanguage].botName
+
+    await getAndCreateUser(chatId)
+
     await ctx.scene.leave('audioDownloader')
 
     await ctx.scene.enter('tiktokDownloader')
-    await ctx.reply('Введите ссылку на TikTok:')
+    await ctx.reply(langObject[userLanguage].enter_tiktok)
+
 
     await tiktokDownloader(bot, botName, tiktokDownloaderScene)
   })
 
 
   bot.action('downloadAudio', async (ctx) => {
+    const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+    const botName = langObject[userLanguage].botName
+
+    await getAndCreateUser(chatId)
+
     await ctx.scene.leave('tiktokDownloader')
 
     await ctx.scene.enter('audioDownloader')
-    await ctx.reply('Введите ссылку на видео:')
+    await ctx.reply(langObject[userLanguage].enter_YouTube)
+
 
     await audioDownloader(bot, botName, audioDownloaderScene)
   })
-  
+  // ------------------------------------------------------------------------------------
 
 
+  // ====================================================================================
+  languages.forEach((language) => {
+    bot.action(language, async (ctx) => {
+      const chatId = ctx.chat.id
+      let userLanguage = ctx.language
+
+      const user = await User.findOne({ where: { chatId } })
+
+      if (user) {
+        try {
+          await user.update({ language })
+          const newCtx = { ...ctx, language }
+          userLanguage = language
+          const startOptions = getStartOptions(newCtx)
+          return ctx.reply(langObject[userLanguage].select_option, startOptions)
+        } catch (error) {
+          console.error('Ошибка при обновлении языка пользователя:', error)
+          await ctx.reply(langObject[userLanguage].error)
+        }
+      } else {
+        try {
+          await User.create({ chatId, language })
+          const newCtx = { ...ctx, language }
+          userLanguage = language
+          const startOptions = getStartOptions(newCtx)
+          return ctx.reply(langObject[userLanguage].select_option, startOptions)
+        } catch (error) {
+          console.error('Ошибка при создании пользователя:', error)
+          await ctx.reply(langObject[userLanguage].error)
+
+        }
+      }
+    })
+  })
+  // ====================================================================================
+  bot.on('message', async (ctx) => {
+    const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+
+    await getAndCreateUser(chatId)
+
+    const sceneId = ctx.session?.scene?.current?.scene?.id;
+    if (!sceneId || (sceneId !== 'audioDownloader' && sceneId !== 'tiktokDownloader')) {
+      const startOptions = getStartOptions(ctx)
+      return ctx.reply(langObject[userLanguage].select_option, startOptions)
+    }
+  })
 
 
 

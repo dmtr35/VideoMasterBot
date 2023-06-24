@@ -8,7 +8,7 @@ const User = sequelize.define('user', {
   chatId: { type: DataTypes.INTEGER, primaryKey: true, unique: true },
   timestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   role: { type: DataTypes.STRING, defaultValue: 'user' },
-  language: { type: DataTypes.STRING, defaultValue: 'russian' },
+  language: { type: DataTypes.STRING, defaultValue: 'ru' },
 
   blocked: { type: DataTypes.BOOLEAN, defaultValue: false },
   blocked_until: { type: DataTypes.DATE, allowNull: true },

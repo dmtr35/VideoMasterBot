@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { langObject } = require('../langObject.js')
 
 const {
   updateSuccessfulRequestsAudioYT,
@@ -9,10 +10,7 @@ const {
 
 
 
-
-
-async function checkYoutubeVideoUrl(ctx, link, message_id) {
-  const chatId = ctx.chat.id
+async function checkYoutubeVideoUrl(ctx, link) {
   const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|m\\.youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/watch\\?v=[A-Za-z0-9-_]{11})';
 
   const regex = new RegExp(regexString)
@@ -36,6 +34,8 @@ async function checkYoutubeVideoUrl(ctx, link, message_id) {
 
 async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   const chatId = ctx.chat.id
+  const userLanguage = ctx.language
+
   const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|tiktok\\.com/\\S*/video/(\\d+)|vm.tiktok\\.com/\\S*)'
   const regex = new RegExp(regexString, 'gm')
 
@@ -57,7 +57,7 @@ async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   } catch (e) {
     await updateFailedRequestsVideoTT(ctx)
 
-    return ctx.telegram.editMessageText(chatId, message_id, message_id, `Некорректная ссылка на видео, попробуйте еще раз:`)
+    return ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].error_video_link)
   }
 }
 

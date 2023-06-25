@@ -1,8 +1,12 @@
+const { langObject } = require('../langObject.js')
 
 
 
 
-async function sendAudioTelegram(ctx, pathsArray, namesArray, botName) {
+async function sendAudioTelegram(ctx, pathsArray, namesArray) {
+    const userLanguage = ctx.language
+    const botName = langObject[userLanguage].botName
+
     const fileIds = []
 
     for (let i = 0; i < pathsArray.length; i++) {
@@ -23,8 +27,10 @@ async function sendAudioTelegram(ctx, pathsArray, namesArray, botName) {
     return fileIdsString
 }
 
-async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, message_id) {
+async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, message_id) {
     const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+    const botName = langObject[userLanguage].botName
 
     for (let i = 0; i < audioIds.length; i++) {
         const path = audioIds[i]
@@ -36,8 +42,7 @@ async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, m
           contentType: "audio/mpeg",
         })
     }
-    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
-
+    await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].all_is_ready)
     return 
 }
 
@@ -45,17 +50,14 @@ async function sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, m
 // -----------------------------------------------------------------------------------------
 
 
-async function sendVideoTelegram(ctx, videoPath, botName) {
+async function sendVideoTelegram(ctx, videoPath) {
+    const userLanguage = ctx.language
+    const botName = langObject[userLanguage].botName
 
     try {
-        console.log("first:sendVideoTelegram:", new Date())
-
-
         const response = await ctx.replyWithVideo({ source: videoPath }, {
             caption: botName,
         })
-        console.log("second:sendVideoTelegram:", new Date())
-
 
         return response.video.file_id
     } catch (e) {
@@ -63,15 +65,16 @@ async function sendVideoTelegram(ctx, videoPath, botName) {
     }
 }
 
-async function sendVideoFromFileId(ctx, fileId, botName, message_id) {
+async function sendVideoFromFileId(ctx, fileId, message_id) {
     const chatId = ctx.chat.id
-
+    const userLanguage = ctx.language
+    const botName = langObject[userLanguage].botName
     
     await ctx.replyWithVideo(fileId, {
         caption: botName,
     })
     
-    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
+    await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].all_is_ready)
     return
 }
 

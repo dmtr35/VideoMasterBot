@@ -8,6 +8,8 @@ const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
 const { sendAudioTelegram, sendAudioFromFileId } = require('../../utils/telegramFunctions.js')
 const { cutAudioFile } = require('../../utils/cutFile.js')
 
+const { langObject } = require('../../langObject.js')
+
 const audioOptions = {
     extractAudio: true,
     audioFormat: "mp3",
@@ -23,11 +25,14 @@ let namesArray = []
 
 
 
-async function downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUrl, message_id) {
+async function downloadYoutubedl(ctx, normalizedFilename, normalVideoUrl, message_id) {
     try {
         const chatId = ctx.chat.id
+        const userLanguage = ctx.language
 
-        await ctx.telegram.editMessageText(chatId, message_id, message_id, `Началась загрузка ролика ⏳`)
+
+        await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].video_download_started)
+
         createWorkerAndDownload(normalVideoUrl, normalizedFilename, workerPath, audioOptions)
             .then(async (filePath) => {
 
@@ -35,7 +40,7 @@ async function downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUr
                 const fileSize = fileStats.size
 
                 if (fileSize >= 50 * 1024 * 1024) {
-                    await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл слишком большой, режем на части 🪚`)
+                    await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].file_is_too_big_cut_it_into_pieces)
 
                     const result = await cutAudioFile(filePath, normalizedFilename, fileSize)
                     pathsArray.push(...result[0])
@@ -45,12 +50,13 @@ async function downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUr
                     namesArray.push(normalizedFilename)
                 }
 
-                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл скачан и обработан, отправляем 💽`)
-                const fileId = await sendAudioTelegram(ctx, pathsArray, namesArray, botName)
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].file_downloaded_processed_sending)
+
+                const fileId = await sendAudioTelegram(ctx, pathsArray, namesArray)
                 console.log('fileId::', fileId)
                 await AudioFile.create({ videoLink: normalVideoUrl, audioLink: fileId })
                 console.log("Audio file uploaded")
-                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].all_is_ready)
 
                 try {
                     await removeFilesAsync(pathsArray)
@@ -60,11 +66,11 @@ async function downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUr
                 }
             })
             .catch((error) => {
-                console.error("Error downloading file:", error);
+                console.error("Error downloading file:", error)
             })
     } catch (error) {
-        console.log("Error uploading audio file:", error);
-        return ctx.reply("Произошла ошибка при загрузке аудио файла, повторите попытку", { chatId });
+        console.log("Error uploading audio file:", error)
+        return ctx.reply(langObject[userLanguage].error_loading_audio_file_try_again, { chatId })
     }
 }
 

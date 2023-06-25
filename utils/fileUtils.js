@@ -1,4 +1,5 @@
 const fs = require("fs")
+const { langObject } = require('../langObject.js')
 
 
 
@@ -32,21 +33,17 @@ const removeFilesAsync = async (paths) => {
 
 const checkSize = async (ctx, fileSize, message_id) => {
   const chatId = ctx.chat.id
+  const userLanguage = ctx.language
+
   const fileSizeInMB = fileSize / 1048576
   const roundedFileSizeInMB = fileSizeInMB.toFixed(2)
-  return ctx.telegram.editMessageText(chatId, message_id, message_id, `🚨Файл занимает ${roundedFileSizeInMB}Mb. Файлы свыше 50 Mb пока что не поддерживаются 😢`)
 
+  const message = langObject[userLanguage].big_file.replace("%s", roundedFileSizeInMB)
+  return ctx.telegram.editMessageText(chatId, message_id, message_id, message)
 }
 
 
 
 
 
-
-
-
-module.exports = {
-  removeFileAsync,
-  removeFilesAsync,
-  checkSize
-}
+module.exports = { removeFileAsync, removeFilesAsync, checkSize }

@@ -1,5 +1,4 @@
 
-const axios = require('axios')
 const path = require('path')
 const fs = require("fs")
 
@@ -8,6 +7,8 @@ const { removeFileAsync, checkSize } = require("../../utils/fileUtils.js")
 const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
 const { sendVideoTelegram, sendVideoFromFileId } = require('../../utils/telegramFunctions.js')
 const { youtubedlInfo } = require('../../utils/youtube.js')
+
+const { langObject } = require('../../langObject.js')
 
 require('dotenv').config()
 
@@ -22,12 +23,13 @@ const mp4 = '.mp4'
 
 
 
-async function downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id) {
+async function downloadYoutubedlShorts(ctx, videoFullUrl, message_id) {
     const chatId = ctx.chat.id
+    const userLanguage = ctx.language
 
     try {
+        await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].video_download_started)
 
-        await ctx.telegram.editMessageText(chatId, message_id, message_id, `Началась загрузка ролика ⏳`)
         const { normalizedFilename } = await youtubedlInfo(videoFullUrl, mp4)
 
         createWorkerAndDownload(videoFullUrl, normalizedFilename, workerPath, videoOptions)
@@ -38,14 +40,13 @@ async function downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id) {
 
                 if (fileSize >= 50 * 1024 * 1024) { return checkSize(ctx, fileSize, message_id) }
 
-
-                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл скачан и обработан, отправляем 💽`)
-                const fileId = await sendVideoTelegram(ctx, filePath, botName)
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].file_downloaded_processed_sending)
+                const fileId = await sendVideoTelegram(ctx, filePath)
                 console.log('fileId::', fileId)
                 await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId })
 
                 console.log("Audio file uploaded")
-                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].all_is_ready)
 
                 try {
                     await removeFileAsync(filePath)
@@ -59,9 +60,8 @@ async function downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id) {
             })
     } catch (error) {
         console.log("Error uploading audio file:", error);
-        return ctx.telegram.editMessageText(chatId, message_id, message_id, `Загрузка youtube-Shorts не удалась, попробуйте еще раз:`)
+        return ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].invalid_download_video)
     }
-
 }
 
 

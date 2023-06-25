@@ -7,8 +7,9 @@ const { removeFileAsync, checkSize } = require("../../utils/fileUtils.js")
 const { createWorkerAndDownload } = require("../../workers/workerUtils.js")
 const { sendVideoTelegram, sendVideoFromFileId } = require('../../utils/telegramFunctions.js')
 
-require('dotenv').config()
+const { langObject } = require('../../langObject.js')
 
+require('dotenv').config()
 
 
 const headers = {
@@ -20,10 +21,9 @@ const workerPath = path.join(__dirname, '../../workers/downloadTiktokWorker.js')
 
 
 
-
-
-async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id) {
+async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, message_id) {
     const chatId = ctx.chat.id
+    const userLanguage = ctx.language
     let videoTitle
 
     try {
@@ -48,14 +48,16 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
 
         videoTitle = `${processedAuthor}-${processedTitle}`
 
-        await ctx.telegram.editMessageText(chatId, message_id, message_id, `Началась загрузка ролика ⏳`)
+        await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].video_download_started)
+
         createWorkerAndDownload(videoUrl, videoTitle, workerPath)
             .then(async (filePath) => {
 
-                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Файл скачан и обработан, отправляем 💽`)
-                const fileId = await sendVideoTelegram(ctx, filePath, botName)
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].file_downloaded_processed_sending)
+
+                const fileId = await sendVideoTelegram(ctx, filePath)
                 await VideoTiktok.create({ videoLink: videoFullUrl, fileVideoId: fileId })
-                await ctx.telegram.editMessageText(chatId, message_id, message_id, `Все готово ✅`)
+                await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].all_is_ready)
 
                 try {
                     await removeFileAsync(filePath)
@@ -64,8 +66,6 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
                     console.error("Ошибка при удалении файла:", error)
                 }
                 return console.log(`Файл ${videoTitle} отправлен в чат ${chatId}`)
-
-
             })
             .catch((error) => {
                 console.error("Error downloading file:", error);
@@ -74,7 +74,8 @@ async function getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_
 
     } catch (error) {
         console.log(`[ ${videoTitle} got error while trying to get video data! ] ===== [skipped]`)
-        return ctx.telegram.editMessageText(chatId, message_id, message_id, `Загрузка не удалась, попробуйте еще раз:`)
+        return ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].download_failed_please_try_again)
+
     }
 }
 

@@ -3,20 +3,23 @@ const { checkYoutubeVideoUrl } = require("../../utils/checkUrl.js")
 const { AudioFile } = require("../../models.js")
 const { youtubedlInfo } = require('../../utils/youtube.js')
 
-
+const { langObject } = require('../../langObject.js')
 const mp3 = '.mp3'
 
 
-async function audioDownloader(bot, botName, audioDownloaderScene) {
+async function audioDownloader(bot, audioDownloaderScene) {
 
   audioDownloaderScene.hears(/.*/, async (ctx) => {
     const chatId = ctx.chat.id
-    const { message_id } = await ctx.reply(`Обработка началась, ожидайте ⚙️`, { chatId })
+    const userLanguage = ctx.language
+
+    const { message_id } = await ctx.reply(langObject[userLanguage].processing_has_begun, { chatId })
+
 
     try {
       let audioFile
       const videoUrl = ctx.message.text;
-      let normalVideoUrl = await checkYoutubeVideoUrl(ctx, videoUrl, message_id)
+      let normalVideoUrl = await checkYoutubeVideoUrl(ctx, videoUrl)
 
       const { normalizedFilename } = await youtubedlInfo(normalVideoUrl, mp3)
 
@@ -25,7 +28,7 @@ async function audioDownloader(bot, botName, audioDownloaderScene) {
         if (!audioFile) {
           console.log('Запись о файле не найдена в базе данных')
 
-          await downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUrl, message_id)
+          await downloadYoutubedl(ctx, normalizedFilename, normalVideoUrl, message_id)
           return console.log(`Файл ${normalizedFilename} отправлен в чат ${chatId}`)
         }
 
@@ -39,18 +42,18 @@ async function audioDownloader(bot, botName, audioDownloaderScene) {
         )
 
         if (results.every((result) => result)) {
-          await sendAudioFromFileId(ctx, audioIds, normalizedFilename, botName, message_id)
+          await sendAudioFromFileId(ctx, audioIds, normalizedFilename, message_id)
         }
       } catch (error) {
         await AudioFile.destroy({ where: { videoLink: normalVideoUrl } })
-        await downloadYoutubedl(ctx, botName, normalizedFilename, normalVideoUrl, message_id)
+        await downloadYoutubedl(ctx, normalizedFilename, normalVideoUrl, message_id)
 
         console.error('Ошибка при получении файла:', error)
       }
 
     } catch (error) {
       console.error('Произошла ошибка глобального try/catch (audioDownloader):', error)
-      return ctx.telegram.editMessageText(chatId, message_id, message_id, `Загрузка не удалась, попробуйте еще раз:`)
+      return ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].download_failed_please_try_again)
     }
   })
 
@@ -65,4 +68,3 @@ module.exports = { audioDownloader }
 
 
 
-// CQACAgIAAxkDAAIXV2SMaunctPqQfA5MzjWHMoO52GifAAJ_LAACjelgSD9nr0CwONwsLwQ CQACAgIAAxkDAAIXWGSMau39NuNYB3dgb57qfn0_8DiSAAKALAACjelgSEQzFPhvRvAuLwQ

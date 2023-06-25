@@ -2,14 +2,6 @@ const youtubedl = require("youtube-dl-exec")
 const unorm = require("unorm")
 
 
-
-
-
-
-
-
-
-
 const flags = {
     dumpSingleJson: true,
     noCheckCertificates: true,
@@ -34,9 +26,7 @@ async function youtubedlInfo(normalVideoUrl, format) {
                     .replace(/[/\\?%*:|",.<>#]/g, "")
                     .replace(/ /g, "_")
                     .substr(0, 64)
-                // normalizedFilename = unorm.nfc(`${filename}.mkv`)
                 normalizedFilename = unorm.nfc(`${filename}${format}`)
-                // normalizedFilename = unorm.nfc(`${filename}.mp3`)
             })
             .catch(error => {
                 console.log("error:", error)

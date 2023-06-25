@@ -4,6 +4,7 @@ const { checkTiktokVideoUrl } = require('../../utils/checkUrl.js')
 const { getVideoMetadata, sendVideoFromFileId } = require('./tiktokFunction.js')
 const { downloadYoutubedlShorts } = require('../YTShortsProcessing/YTShortsDownloader.js')
 
+const { langObject } = require('../../langObject.js')
 
 
 
@@ -11,12 +12,13 @@ const { downloadYoutubedlShorts } = require('../YTShortsProcessing/YTShortsDownl
 
 
 
-async function tiktokDownloader( bot, botName, tiktokDownloaderScene) {
-    
+async function tiktokDownloader(bot, tiktokDownloaderScene) {
+
     tiktokDownloaderScene.hears(/.*/, async (ctx) => {
         const chatId = ctx.chat.id
-        const { message_id } = await ctx.reply(`Обработка началась, ожидайте ⚙️`, { chatId })
+        const userLanguage = ctx.language
 
+        const { message_id } = await ctx.reply(langObject[userLanguage].processing_has_begun, { chatId })
 
         try {
             let videoUrl = ctx.message.text
@@ -29,22 +31,22 @@ async function tiktokDownloader( bot, botName, tiktokDownloaderScene) {
                 if (!videoFile) {
                     console.log('Запись о файле не найдена в базе данных')
                     if (videoFullUrl.includes('https://www.youtube')) {
-                        await downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id)
-                } else {
-                        await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
+                        await downloadYoutubedlShorts(ctx, videoFullUrl, message_id)
+                    } else {
+                        await getVideoMetadata(ctx, videoUrlId, videoFullUrl, message_id)
                     }
                     return console.log('файл отправлен')
                 }
                 const telegramFile = await bot.telegram.getFile(videoFile.fileVideoId)
 
                 if (telegramFile) {
-                    await sendVideoFromFileId(ctx, videoFile.fileVideoId, botName, message_id)
+                    await sendVideoFromFileId(ctx, videoFile.fileVideoId, message_id)
                 } else {
                     await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
                     if (videoFullUrl.includes('https://www.youtube')) {
-                        await downloadYoutubedlShorts(ctx, videoFullUrl, botName, message_id)
+                        await downloadYoutubedlShorts(ctx, videoFullUrl, message_id)
                     } else {
-                        await getVideoMetadata(ctx, videoUrlId, videoFullUrl, botName, message_id)
+                        await getVideoMetadata(ctx, videoUrlId, videoFullUrl, message_id)
                     }
                     return console.log('файл отправлен')
                 }
@@ -53,7 +55,7 @@ async function tiktokDownloader( bot, botName, tiktokDownloaderScene) {
             }
         } catch (error) {
             console.error('Произошла ошибка глобального try/catch (tiktokDownloader): ', error);
-            return ctx.telegram.editMessageText(chatId, message_id, message_id, `Загрузка не удалась, попробуйте еще раз:`)
+            return ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].download_failed_please_try_again)
         }
     })
 

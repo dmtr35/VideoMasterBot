@@ -1,10 +1,13 @@
 const { User } = require("../models.js")
+const { langObject } = require('../langObject.js')
 
 
 
 
 const blockMiddleware = async (ctx, next) => {
     const chatId = ctx.chat.id
+    const userLanguage = ctx.language
+
     const user = await User.findOne({ where: { chatId } })
 
     // Проверяем, заблокирован ли пользователь
@@ -16,8 +19,10 @@ const blockMiddleware = async (ctx, next) => {
         // Если пользователь заблокирован, проверяем, истек ли срок блокировки
         if (user.blocked_until && user.blocked_until > new Date()) {
             // Если срок блокировки не истек, отправляем сообщение о блокировке
-            const remainingTime = Math.ceil((user.blocked_until - new Date()) / 1000 / 60); // Расчет оставшегося времени блокировки в минутах
-            return ctx.reply(`Ваш аккаунт заблокирован. Попробуйте снова через ${remainingTime} мин.`)
+            const remainingTime = Math.ceil((user.blocked_until - new Date()) / 1000 / 60) // Расчет оставшегося времени блокировки в минутах
+            
+            const message = langObject[userLanguage].warning_blocked.replace("%s", remainingTime)
+            return ctx.reply(message)
         } else {
             // Если срок блокировки истек, разблокируем пользователя
             user.blocked = false

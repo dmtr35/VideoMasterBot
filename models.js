@@ -23,7 +23,8 @@ const User = sequelize.define('user', {
   lastYouTubeRequestTimestamp: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
 
   warningCount: { type: DataTypes.INTEGER, defaultValue: 0 },
-  lastWarningTimestamp: { type: DataTypes.INTEGER, allowNull: true }
+  blockedCount: { type: DataTypes.INTEGER, defaultValue: 0 },
+  lastWarningTimestamp: { type: DataTypes.DATE, allowNull: true }
 })
 
 

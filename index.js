@@ -9,18 +9,16 @@ const { User } = require("./models.js")
 const { audioDownloader } = require("./service/audioProcessing/audioDownloader.js")
 const { tiktokDownloader } = require("./service/tiktok-processing/tiktokDownloader.js")
 
-
 const { langMiddleware } = require('./middlewares/langMiddleware.js')
 const { blockMiddleware } = require('./middlewares/blockMiddleware.js')
 const { limitRequestsMiddleware, limitTikTokRequestsMiddleware, limitYouTubeRequestsMiddleware } = require('./middlewares/limitRequestsMiddleware.js')
-
 
 require("dotenv").config()
 
 
 const token = process.env.TOKEN_BOT
 const bot = new Telegraf(token)
-const languages = ['ru', 'en']
+const languages = ['ru', 'en', 'ua']
 
 
 bot.use(langMiddleware)
@@ -46,6 +44,7 @@ bot.use(stage.middleware())
 
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 const start = async (ctx) => {
 
   try {
@@ -55,10 +54,8 @@ const start = async (ctx) => {
     console.log('Подключение к бд сломалось', e)
   }
 
+  // _______________________________________________________________________________________
 
-
-
-// _______________________________________________________________________________________
   const handleStartCommand = async (ctx) => {
     await ctx.scene.leave()
     const chatId = ctx.chat.id
@@ -81,7 +78,7 @@ const start = async (ctx) => {
   audioDownloaderScene.command('start', handleStartCommand)
   tiktokDownloaderScene.command('start', handleStartCommand)
 
-// _______________________________________________________________________________________
+  // _______________________________________________________________________________________
 
   const handleInfoCommand = async (ctx) => {
     const chatId = ctx.chat.id
@@ -101,7 +98,8 @@ const start = async (ctx) => {
   audioDownloaderScene.command('info', handleInfoCommand)
   tiktokDownloaderScene.command('info', handleInfoCommand)
 
-// _______________________________________________________________________________________
+  // _______________________________________________________________________________________
+
   const handleLanguageCommand = async (ctx) => {
     const chatId = ctx.chat.id
     const userLanguage = ctx.language
@@ -119,14 +117,14 @@ const start = async (ctx) => {
   bot.command('language', handleLanguageCommand)
   audioDownloaderScene.command('language', handleLanguageCommand)
   tiktokDownloaderScene.command('language', handleLanguageCommand)
-// ______________________________________________________________________________________
+
+  // ______________________________________________________________________________________
 
 
   // ------------------------------------------------------------------------------------
   bot.action('downloadTikTok', async (ctx) => {
     const chatId = ctx.chat.id
     const userLanguage = ctx.language
-    const botName = langObject[userLanguage].botName
 
     await getAndCreateUser(chatId)
 
@@ -134,16 +132,13 @@ const start = async (ctx) => {
 
     await ctx.scene.enter('tiktokDownloader')
     await ctx.reply(langObject[userLanguage].enter_tiktok)
-
-
-    await tiktokDownloader(bot, botName, tiktokDownloaderScene)
+    await tiktokDownloader(bot, tiktokDownloaderScene)
   })
 
 
   bot.action('downloadAudio', async (ctx) => {
     const chatId = ctx.chat.id
     const userLanguage = ctx.language
-    const botName = langObject[userLanguage].botName
 
     await getAndCreateUser(chatId)
 
@@ -151,9 +146,7 @@ const start = async (ctx) => {
 
     await ctx.scene.enter('audioDownloader')
     await ctx.reply(langObject[userLanguage].enter_YouTube)
-
-
-    await audioDownloader(bot, botName, audioDownloaderScene)
+    await audioDownloader(bot, audioDownloaderScene)
   })
   // ------------------------------------------------------------------------------------
 
@@ -214,6 +207,4 @@ const start = async (ctx) => {
 
 
 start()
-
-
 

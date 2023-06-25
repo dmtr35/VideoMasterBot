@@ -1,6 +1,7 @@
 const { langObject } = require('./langObject.js')
 
 
+
 const getStartOptions = (ctx) => {
   const userLanguage = ctx.language
 
@@ -25,7 +26,11 @@ const getLanguagesOptions = (ctx) => {
   const languagesOptions = {
     reply_markup: JSON.stringify({
       inline_keyboard: [
-        [{ text: langObject[userLanguage].russia, callback_data: 'ru' }, { text: langObject[userLanguage].english, callback_data: 'en' }],
+        [
+          { text: langObject[userLanguage].english, callback_data: 'en' },
+          { text: langObject[userLanguage].ukraine, callback_data: 'ua' },
+          { text: langObject[userLanguage].russia, callback_data: 'ru' },
+        ],
       ]
     })
   }

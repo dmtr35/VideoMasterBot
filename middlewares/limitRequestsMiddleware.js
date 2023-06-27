@@ -78,13 +78,6 @@ const limitRequestsMiddleware = async (ctx, next) => {
 
 
 
-
-// const limitReq
-
-
-
-
-
 const limitTikTokRequestsMiddleware = async (ctx, next) => {
   const chatId = ctx.chat.id
   const user = await User.findOne({ where: { chatId } })

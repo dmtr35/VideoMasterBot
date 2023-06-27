@@ -45,7 +45,7 @@ bot.use(stage.middleware())
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-const start = async (ctx) => {
+const start = async () => {
 
   try {
     await sequelize.authenticate()
@@ -55,6 +55,12 @@ const start = async (ctx) => {
   }
 
   // _______________________________________________________________________________________
+
+  bot.telegram.setMyCommands([
+    { command: 'start', description: 'Start working' },
+    { command: 'info', description: 'Information' },
+    { command: 'language', description: 'Select language' }
+  ])
 
   const handleStartCommand = async (ctx) => {
     await ctx.scene.leave()

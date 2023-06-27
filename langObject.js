@@ -56,8 +56,10 @@ We are constantly working on improving and expanding the functionality of the bo
 Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downloading and saving media files.
 
 `
-    }
-    ,
+    },
+
+
+
     ru: {
         "start": "Скачать TikTok / YouTube Shorts",
         "audio": "Скачать аудио YouTube ролика",

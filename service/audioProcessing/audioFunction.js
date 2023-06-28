@@ -20,8 +20,7 @@ const audioOptions = {
 
 
 const workerPath = path.join(__dirname, '../../workers/downloadAudioYTWorker.js')
-let pathsArray = []
-let namesArray = []
+
 
 
 
@@ -30,8 +29,10 @@ async function downloadYoutubedl(ctx, normalizedFilename, normalVideoUrl, messag
         const chatId = ctx.chat.id
         const userLanguage = ctx.language
 
-
         await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].video_download_started)
+        
+        let pathsArray = []
+        let namesArray = []
 
         createWorkerAndDownload(normalVideoUrl, normalizedFilename, workerPath, audioOptions)
             .then(async (filePath) => {
@@ -49,7 +50,7 @@ async function downloadYoutubedl(ctx, normalizedFilename, normalVideoUrl, messag
                     pathsArray.push(filePath)
                     namesArray.push(normalizedFilename)
                 }
-
+                
                 await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].file_downloaded_processed_sending)
 
                 const fileId = await sendAudioTelegram(ctx, pathsArray, namesArray)

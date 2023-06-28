@@ -40,18 +40,16 @@ async function tiktokDownloader(bot, tiktokDownloaderScene) {
                 const telegramFile = await bot.telegram.getFile(videoFile.fileVideoId)
 
                 if (telegramFile) {
-                    await sendVideoFromFileId(ctx, videoFile.fileVideoId, message_id)
-                } else {
-                    await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
+                    return sendVideoFromFileId(ctx, videoFile.fileVideoId, message_id)
+                } 
+            } catch (error) {
+                await VideoTiktok.destroy({ where: { videoLink: videoFullUrl } })
                     if (videoFullUrl.includes('https://www.youtube')) {
                         await downloadYoutubedlShorts(ctx, videoFullUrl, message_id)
                     } else {
                         await getVideoMetadata(ctx, videoUrlId, videoFullUrl, message_id)
                     }
                     return console.log('файл отправлен')
-                }
-            } catch (error) {
-                return console.error('Ошибка загрузки файла: ', error)
             }
         } catch (error) {
             console.error('Произошла ошибка глобального try/catch (tiktokDownloader): ', error);

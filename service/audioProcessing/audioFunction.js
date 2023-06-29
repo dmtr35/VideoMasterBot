@@ -40,7 +40,7 @@ async function downloadYoutubedl(ctx, normalizedFilename, normalVideoUrl, messag
                 fileStats = fs.statSync(filePath)
                 const fileSize = fileStats.size
 
-                if (fileSize >= 50 * 1024 * 1024) {
+                if (fileSize >= 50 * 1020 * 1020) {
                     await ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].file_is_too_big_cut_it_into_pieces)
 
                     const result = await cutAudioFile(filePath, normalizedFilename, fileSize)

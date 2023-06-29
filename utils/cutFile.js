@@ -7,7 +7,7 @@ const { removeFileAsync } = require("../utils/fileUtils.js")
 
 
 const cutAudioFile = async (filePath, baseName, fileSize) => {
-  const maxChunkSize = 50 * 1024 * 1024
+  const maxChunkSize = 50 * 1020 * 1020
   const totalChunks = Math.ceil(fileSize / maxChunkSize)
 
   const duration = await getDuration(filePath)

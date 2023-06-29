@@ -81,6 +81,8 @@ const limitRequestsMiddleware = async (ctx, next) => {
 const limitTikTokRequestsMiddleware = async (ctx, next) => {
   const chatId = ctx.chat.id
   const user = await User.findOne({ where: { chatId } })
+  const userLanguage = ctx.language
+
 
   if (user) {
     if (user.role === 'admin') {
@@ -102,7 +104,7 @@ const limitTikTokRequestsMiddleware = async (ctx, next) => {
     const successfulRequests = user.successfulRequestsVideoTT
 
     // Проверяем, достигнуто ли ограничение на число удачных запросов в день
-    if (successfulRequests >= 50) {
+    if (successfulRequests >= 200) {
       await ctx.scene.leave() // Выходим из текущей сцены
       const startOptions = getStartOptions(ctx)
       await ctx.reply(langObject[userLanguage].request_limit_TikTok, startOptions)
@@ -117,6 +119,8 @@ const limitTikTokRequestsMiddleware = async (ctx, next) => {
 const limitYouTubeRequestsMiddleware = async (ctx, next) => {
   const chatId = ctx.chat.id
   const user = await User.findOne({ where: { chatId } })
+  const userLanguage = ctx.language
+
 
   if (user) {
     if (user.role === 'admin') {
@@ -138,11 +142,10 @@ const limitYouTubeRequestsMiddleware = async (ctx, next) => {
     const successfulRequests = user.successfulRequestsAudioYT
 
     // Проверяем, достигнуто ли ограничение на число удачных запросов в день
-    if (successfulRequests >= 50) {
+    if (successfulRequests >= 200) {
       await ctx.scene.leave() // Выходим из текущей сцены
       const startOptions = getStartOptions(ctx)
       await ctx.reply(langObject[userLanguage].request_limit_YouTube, startOptions)
-
 
       return
     }

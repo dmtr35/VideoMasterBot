@@ -33,7 +33,7 @@ async function audioDownloader(bot, audioDownloaderScene) {
         }
 
         const audioIds = audioFile.audioLink.split(' ')
-
+        console.log('audioIds::',audioIds)
         const results = await Promise.all(
           audioIds.map(async (audioId) => {
             const telegramFile = await bot.telegram.getFile(audioId)

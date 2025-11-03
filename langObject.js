@@ -30,7 +30,7 @@ const langObject = {
         "error_loading_audio_file_try_again": "An error occurred while loading the audio file, please try again",
 
         "file_downloaded_processed_sending": "The file is downloaded and processed, sending it 💽",
-        "video_download_started": "Video download started ⏳",
+        "video_download_started": "Video download started, wait ⏳",
         "all_is_ready": "All is ready ✅",
         "processing_has_begun": "Processing has begun, please wait ⚙️",
         "file_is_too_big_cut_it_into_pieces": "The file is too big, cutting it into pieces 🪚",
@@ -91,7 +91,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
         "error_loading_audio_file_try_again": "Произошла ошибка при загрузке аудио файла, повторите попытку",
 
         "file_downloaded_processed_sending": "Файл скачан и обработан, отправляем 💽",
-        "video_download_started": "Началась загрузка ролика ⏳",
+        "video_download_started": "Началась загрузка ролика, ожидайте ⏳",
         "all_is_ready": "Все готово ✅",
         "processing_has_begun": "Обработка началась, ожидайте ⚙️",
         "file_is_too_big_cut_it_into_pieces": "Файл слишком большой, режем на части 🪚",
@@ -156,7 +156,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
         "error_loading_audio_file_try_again": "Виникла помилка при завантаженні аудіофайла, повторіть спробу",
 
         "file_downloaded_processed_sending": "Файл завантажено і оброблено, надсилаємо 💽",
-        "video_download_started": "Розпочато завантаження відео ⏳",
+        "video_download_started": "Розпочато завантаження відео, очікуйте ⏳",
         "all_is_ready": "Все готово ✅",
         "processing_has_begun": "Почалась обробка, зачекайте ⚙️",
         "file_is_too_big_cut_it_into_pieces": "Файл занадто великий, розрізаємо на частини 🪚",

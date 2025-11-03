@@ -31,40 +31,54 @@ async function checkYoutubeVideoUrl(ctx, link) {
 
 
 
-
 async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
-  const chatId = ctx.chat.id
-  const userLanguage = ctx.language
+  const chatId = ctx.chat.id;
+  const userLanguage = ctx.language;
 
-  const regexString = 'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|tiktok\\.com/\\S*/video/(\\d+)|vm.tiktok\\.com/\\S*)'
-  const regex = new RegExp(regexString, 'gm')
+  const regexString =
+    'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|tiktok\\.com/\\S*/video/(\\d+)|vm\\.tiktok\\.com/\\S*)';
+  const regex = new RegExp(regexString, 'gm');
 
   try {
-    const response = await axios.get(urlTiktok)
-    const responseHtml = response.data
-    const match = await regex.exec(responseHtml)
+    // Разрешаем редиректы (по умолчанию 5)
+    const response = await axios.get(urlTiktok, {
+      maxRedirects: 5,
+      validateStatus: () => true, // чтобы не выбрасывал ошибку на 301
+    });
+
+    // Берём конечный URL после редиректов
+    const finalUrl =
+      response.request?.res?.responseUrl ||
+      response.request?._redirectable?._currentUrl ||
+      urlTiktok;
+
+    console.log("Resolved TikTok URL:", finalUrl);
+
+    const match = regex.exec(finalUrl);
 
     if (match) {
-      const videoFullUrl = match[0]
-      const videoUrlId = match[1]
+      const videoFullUrl = match[0];
+      const videoUrlId = match[1];
 
-      await updateSuccessfulRequestsVideoTT(ctx)
+      await updateSuccessfulRequestsVideoTT(ctx);
 
-      return { videoUrlId, videoFullUrl }
+      return { videoUrlId, videoFullUrl };
     } else {
-      throw new Error('Ссылка не найдена!')
+      throw new Error("Ссылка не найдена!");
     }
   } catch (e) {
-    await updateFailedRequestsVideoTT(ctx)
+    console.error("TikTok check error:", e);
+    await updateFailedRequestsVideoTT(ctx);
 
-    return ctx.telegram.editMessageText(chatId, message_id, message_id, langObject[userLanguage].error_video_link)
+    return ctx.telegram.editMessageText(
+      chatId,
+      message_id,
+      message_id,
+      langObject[userLanguage].error_video_link
+    );
   }
 }
 
 
 
-
-
 module.exports = { checkYoutubeVideoUrl, checkTiktokVideoUrl }
-
-

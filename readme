@@ -1,0 +1,63 @@
+1. Установи Node.js:
+sudo apt update
+sudo apt install nodejs npm
+sudo apt install ffmpeg -y                                      # не забыть установить ffmpeg
+
+
+2. Перейти в папку с ботом и установить зависимости:
+npm install
+
+3. Запуск бота с pm2
+# node index.js
+sudo npm install -g pm2
+pm2 start index.js --name VideoMasterBot
+
+
+
+4. Установить и настроить базу PostgreSQL:
+sudo apt install postgresql postgresql-contrib
+sudo systemctl enable --now postgresql
+=======================================================================
+1. Подключение к PostgreSQL под суперпользователем
+sudo -u postgres psql
+
+2. Создание базы данных
+CREATE DATABASE videomaster;                                    # создаёт новую базу данных с именем videomaster
+
+3. Создание пользователя с паролем
+CREATE USER myuser WITH PASSWORD 'pass';                        # создаёт пользователя myuser с паролем pass
+
+4. Предоставление прав на базу данных
+GRANT ALL PRIVILEGES ON DATABASE videomaster TO myuser;         # Дает пользователю myuser полный доступ к базе videomaster
+
+5. Назначение прав на схему public внутри базы
+\c videomaster                                                  # подключаемся к базе videomaster
+GRANT ALL ON SCHEMA public TO myuser;                           # даёт права на все объекты в схеме public
+ALTER SCHEMA public OWNER TO myuser;                            # делает myuser владельцем схемы
+
+\q
+=======================================================================
+
+
+
+
+5. В файле .env добавь строки:
+TOKEN_BOT=6220432205:AAF8LfUm6Jamd..                                     # Telegram bot token
+COOKIE_00=_ttp=2vOdA6ar9mglIdylf1rgtZmUjcg; tt_csrf_token=xxJ..          # Взять строку с куки на сайте tik-tok, после авторизации
+
+# Database settings
+DB_NAME=videomaster
+DB_USER=myuser
+DB_PASSWORD=pass
+DB_HOST=127.0.0.1
+DB_PORT=5432
+
+
+
+ps: проверить таблици
+sudo -u postgres psql videomaster       # подключаемся к базе videomaster
+\dt                                     # показывает все таблицы текущей схемы
+\d users                                # показывает колонки, типы данных, ограничения и индекс для таблицы
+SELECT * FROM users;                    # покажет все строки таблицы
+
+

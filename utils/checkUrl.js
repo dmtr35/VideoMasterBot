@@ -35,6 +35,9 @@ async function checkTiktokVideoUrl(ctx, urlTiktok, message_id) {
   const chatId = ctx.chat.id;
   const userLanguage = ctx.language;
 
+  // обрезаем query-параметры
+  urlTiktok = urlTiktok.split('?')[0];
+  
   const regexString =
     'https?://(?:www\\.)?(?:m\\.youtube\\.com/shorts/[A-Za-z0-9-_]{11}|youtube\\.com/shorts/[A-Za-z0-9-_]{11}|tiktok\\.com/\\S*/video/(\\d+)|vm\\.tiktok\\.com/\\S*)';
   const regex = new RegExp(regexString, 'gm');

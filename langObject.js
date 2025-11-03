@@ -8,7 +8,7 @@ const langObject = {
         "ukraine": "🇺🇦 Ukrainian",
 
         "select_option": "To get started, please select an option:",
-        "botName": "Downloaded with @MediaWizardBot",
+        "botName": "Downloaded with @tiktok_shorts_downloader_bot",
         "select_language": "Select your preferred language:",
 
         "big_file": "🚨The file size is %sMb. Files larger than 50 Mb are not supported yet ",
@@ -36,7 +36,7 @@ const langObject = {
         "file_is_too_big_cut_it_into_pieces": "The file is too big, cutting it into pieces 🪚",
 
         "infoMessage": `
-        @MediaWizardBot is designed for downloading videos from TikTok and YouTube Shorts, as well as downloading audio from YouTube videos directly in Telegram.
+        @tiktok_shorts_downloader_bot is designed for downloading videos from TikTok and YouTube Shorts, as well as downloading audio from YouTube videos directly in Telegram.
 
 Simply select the desired section and send the bot a video link in the chat.
 
@@ -53,7 +53,7 @@ The bot is completely free, ad-free, and has some limitations:
 
 We are constantly working on improving and expanding the functionality of the bot. If you have any suggestions or questions, feel free to reach out to us.
 
-Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downloading and saving media files.
+Thank you for using @tiktok_shorts_downloader_bot! We hope it becomes a useful tool for downloading and saving media files.
 
 `
     },
@@ -69,7 +69,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
         "ukraine": "🇺🇦 Украинский",
 
         "select_option": "Для начала выберите опцию:",
-        "botName": "скачано с помощью @MediaWizardBot",
+        "botName": "скачано с помощью @tiktok_shorts_downloader_bot",
         "select_language": "Выберите предпочтительный язык:",
 
         "big_file": "🚨Файл занимает %sMb. Файлы свыше 50 Mb пока что не поддерживаются 😢",
@@ -97,7 +97,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
         "file_is_too_big_cut_it_into_pieces": "Файл слишком большой, режем на части 🪚",
 
         "infoMessage": `
-        @MediaWizardBot предназначен для загрузки видео с TikTok и YouTube Shorts, а также для загрузки аудио с видео YouTube прямо в Telegram.
+        @tiktok_shorts_downloader_bot предназначен для загрузки видео с TikTok и YouTube Shorts, а также для загрузки аудио с видео YouTube прямо в Telegram.
 
 Просто выберите нужный раздел и отправьте боту ссылку на видео в чате.
 
@@ -114,7 +114,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
 
 Мы постоянно работаем над улучшением и расширением функциональности бота. Если у вас есть какие-либо предложения или вопросы, не стесняйтесь обращаться к нам.
 
-Спасибо, что используете @MediaWizardBot! Мы надеемся, что он станет полезным инструментом для загрузки и сохранения медиафайлов.
+Спасибо, что используете @tiktok_shorts_downloader_bot! Мы надеемся, что он станет полезным инструментом для загрузки и сохранения медиафайлов.
 
 `
     },
@@ -133,7 +133,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
         "ukraine": "🇺🇦 Українська",
 
         "select_option": "Спочатку виберіть опцію:",
-        "botName": "Завантажено за допомогою @MediaWizardBot",
+        "botName": "Завантажено за допомогою @tiktok_shorts_downloader_bot",
         "select_language": "Виберіть бажану мову:",
 
         "big_file": "🚨Файл займає %s Мб. Файли розміром понад 50 Мб наразі не підтримуються 😢",
@@ -162,7 +162,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
         "file_is_too_big_cut_it_into_pieces": "Файл занадто великий, розрізаємо на частини 🪚",
 
         "infoMessage": `
-        @MediaWizardBot призначений для завантаження відео з TikTok і YouTube Shorts, а також для завантаження аудіо з відео YouTube безпосередньо в Telegram.
+        @tiktok_shorts_downloader_bot призначений для завантаження відео з TikTok і YouTube Shorts, а також для завантаження аудіо з відео YouTube безпосередньо в Telegram.
 
 Просто виберіть потрібний розділ і надішліть боту посилання на відео в чаті.
 
@@ -179,7 +179,7 @@ Thank you for using @MediaWizardBot! We hope it becomes a useful tool for downlo
 
 Ми постійно працюємо над вдосконаленням і розширенням функціональності бота. Якщо у вас є які-небудь пропозиції або запитання, не соромтеся звертатися до нас.
 
-Дякуємо, що використовуєте @MediaWizardBot! Ми сподіваємося, що він стане корисним інструментом для завантаження та збереження медіафайлів.
+Дякуємо, що використовуєте @tiktok_shorts_downloader_bot! Ми сподіваємося, що він стане корисним інструментом для завантаження та збереження медіафайлів.
 
 `
     }

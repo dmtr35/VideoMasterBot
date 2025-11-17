@@ -60,4 +60,7 @@ sudo -u postgres psql videomaster       # подключаемся к базе v
 \d users                                # показывает колонки, типы данных, ограничения и индекс для таблицы
 SELECT * FROM users;                    # покажет все строки таблицы
 
-
+# изменить роль юзеру
+UPDATE users
+SET role = 'admin'
+WHERE "chatId" = 000000000;

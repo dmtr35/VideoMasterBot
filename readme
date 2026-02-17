@@ -43,6 +43,7 @@ ALTER SCHEMA public OWNER TO myuser;                            # делает m
 
 5. В файле .env добавь строки:
 TOKEN_BOT=6220432205:AAF8LfUm6Jamd..                                     # Telegram bot token
+# открываем https://www.tiktok.com/ авторизируемся, вкладка Network, выбрать "www.tiktok.com", строка cookie
 COOKIE_00=_ttp=2vOdA6ar9mglIdylf1rgtZmUjcg; tt_csrf_token=xxJ..          # Взять строку с куки на сайте tik-tok, после авторизации
 
 # Database settings
